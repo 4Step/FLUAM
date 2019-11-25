@@ -7,7 +7,7 @@
 "FRATAR","fratHHFact",1.884,"WGHT_HH"
 "FRATAR","fratUrbanArea",1611.567,"Urban area"
 "ResLandConsume","resConstantCoef",-0.7,"constant"
-"ResLandConsume","resGrowBoundaryCoef",4,"if outside the urban growth boundry"
+"ResLandConsume","resGrowBoundaryCoef",4,"if inside the urban growth boundry"
 "ResLandConsume","resDistToCoast",-0.002723,"distance to coast (dis_coast)"
 "ResLandConsume","resAccessChangeCoef",2.4,"change in accessibility (pache)"
 "ResLandConsume","resNonResUseCoef",-0.2,"non residentail use (nr_cnt_per)"

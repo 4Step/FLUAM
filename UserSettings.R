@@ -34,17 +34,17 @@ DRI_file     <- "Input/controlTotals/FLUAM_DRI.xlsx"
 
 # These can be standard files too
 # skim_folder  <- "Input/networks_skims"   
-base_data    <- "Input/base_data"  
-cntrl_folder <- "Input/controlTotals"
+# base_data    <- "Input/base_data"  
+# cntrl_folder <- "Input/controlTotals"
 
 # Max iterations 
-max_iter <- 50
+max_iter <- 25
 
 # Run FLUAM for each year
 start_time <- Sys.time()
 
-# for(i in 2:length(Years)){
-for(i in 2:2){
+for(i in 2:length(Years)){
+# for(i in 2:2){
   print("*******************************************************")
   print(paste("Computing FLUAM :", Years[i]))
   source("source_code_new/FLUAM.R")

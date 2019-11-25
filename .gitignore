@@ -2,3 +2,5 @@
 .Rhistory
 .RData
 .Ruserdata
+/Input/networks_skims/*
+/Output/*
