@@ -151,12 +151,55 @@ updateDensityThresholds <- function(df_taz, df_dc){
 
 #-------------------------------------------------------------------------------
 # Read DRI Information
-getDRIs <- function(DRI_file, growth_year){
-  df_DRI   <- read.xlsx(DRI_file, sheet = "DRIs") %>% 
-    select(TAZ, paste(growth_year, "DRI_HH", sep ="."), paste(growth_year, "DRI_EMP", sep ="."))
+getDRIs <- function(DRI_file, curr_year, next_year, runType, global_Flag){
+    
+    # default (runType = 1)
+    prev_DRI_year  = curr_year
+    next_DRI_year  = next_year
+        
+    if(runType == -1){
+      prev_DRI_year  = next_year
+      next_DRI_year  = curr_year
+    } 
   
-  colnames(df_DRI) <- c("TAZ", "DRI_Housing", "DRI_Employment")
-  
+    # Supplied includes current year data and thus compute increment
+    if(global_Flag == 0){
+      
+      df_DRI   <- read.xlsx(DRI_file, sheet = "DRIs")
+      
+      if(curr_year == 2015){
+        
+        df_DRI <- df_DRI %>%
+                mutate(DRI_Housing = get(paste(next_year, "DRI_HH", sep =".")) -
+                                     `2015.Parcel_HH`,
+                       DRI_Employment = get(paste(next_year, "DRI_EMP", sep =".")) - 
+                                        `2015.Parcel_EMP`
+                       ) %>%
+                select(TAZ, DRI_Housing, DRI_Employment)
+        
+      } else {
+        df_DRI <- df_DRI %>%
+                mutate(DRI_Housing = get(paste(next_DRI_year, "DRI_HH", sep =".")) -
+                                     get(paste(prev_DRI_year, "DRI_HH", sep =".")),
+                       DRI_Employment = get(paste(next_DRI_year , "DRI_EMP", sep =".")) - 
+                                        get(paste(prev_DRI_year, "DRI_EMP", sep ="."))
+                       ) %>%
+                select(TAZ, DRI_Housing, DRI_Employment)     
+
+      }
+      
+    } else{
+      # Supplied are increments and use the deltas directly
+      df_DRI   <- read.xlsx(DRI_file, sheet = "DRI_Increment")
+      
+      df_DRI <- df_DRI %>%
+             select(TAZ, 
+                    DRI_Housing = paste(next_DRI_year, "DRI_HH", sep ="."), 
+                    DRI_Employment = paste(next_DRI_year, "DRI_EMP", sep ="."))
+      
+      # colnames(df_DRI) <- c("TAZ", "DRI_Housing", "DRI_Employment")
+    } 
+    
   return(df_DRI)
 }
 

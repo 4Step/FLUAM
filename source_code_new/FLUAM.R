@@ -57,7 +57,7 @@ df_gc <- getGrowthTarget(gc_file, useMPO_Controls, growth_year)
 df_dc <- getDensityThresholds(dc_file) 
 
 # Read DRI data
-df_DRI  <- getDRIs(DRI_file, growth_year)
+df_DRI  <- getDRIs(DRI_file, curr_year, next_year, runType, global_Flag)
    
 # Update density constraints
 df_taz <- updateDensityThresholds(df_taz, df_dc)
@@ -140,7 +140,7 @@ empConverge <- ret$DRIEMPbyGrowthCenter
 #-------------------------------------------------------------------------------
 # FRATAR
 #-------------------------------------------------------------------------------
-print("Computing Trips / Frata Inputs...")
+print("Computing Trips / Fratar Inputs...")
 source("source_code_new/7_Prepare_Fratar_Inputs.R")
 df_taz5 <- computeFRATAR(df_taz4)
 

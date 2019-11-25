@@ -19,9 +19,15 @@ library(stringr)
 path       <- "M:/Models/StateWide/TSM_Legacy/FLUAM"
 Years      <- c(2015, 2020, 2025, 2030, 2035, 2040, 2045, 2050)
 RunDir     <- c(0,       1,    1,    1,    1,    1,    1,    1)
+
 useMPO_Controls <- FALSE
 # If we are using MPO controls then use the below setting
 # RunDir     <- c(0,     1,    1,    -1,    -1,    0,    1,    1)  
+
+# DRI specification
+# 0 = provided are DRI totals 
+# 1 = provided are DRI increments from last 5 years
+global_Flag = 0  
 
 # Read control file
 ctl_file     <- "Parameter/FLUAM_Properties.csv"
@@ -43,8 +49,8 @@ max_iter <- 25
 # Run FLUAM for each year
 start_time <- Sys.time()
 
-for(i in 2:length(Years)){
-# for(i in 2:2){
+# for(i in 2:length(Years)){
+for(i in 2:2){
   print("*******************************************************")
   print(paste("Computing FLUAM :", Years[i]))
   source("source_code_new/FLUAM.R")
