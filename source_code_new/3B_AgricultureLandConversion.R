@@ -1,12 +1,20 @@
 # convert agriculture land to res and non-res available
-
-convertAgriculture <- function(dt_taz2, next_year){
+convertAgriculture <- function(dt_taz2, next_year, Agri_res_noRes_Flag){
   
   # This is always computed from the base land
   statewide_farmLand <- dt_taz2[ , sum(AgriculturalAcres)] * (1.5 / 100) * (next_year - 2015)
   
   dt_taz2 <- dt_taz2[ , "resDevShare" := 0]
-  dt_taz2 <- dt_taz2[(resDeveloped + nonresDeveloped) > 0, "resDevShare" :=  resDeveloped / (resDeveloped + nonresDeveloped)]
+  if(Agri_res_noRes_Flag == 1){
+      dt_taz2 <- dt_taz2[(resDeveloped + nonresDeveloped) > 0, 
+                         "resDevShare" :=  resDeveloped / (resDeveloped + nonresDeveloped)]
+  }
+  
+  if(Agri_res_noRes_Flag == 2){
+    dt_taz2 <- dt_taz2[sum(resDeveloped + nonresDeveloped) > 0, 
+                         "resDevShare" :=  sum(resDeveloped) / sum(resDeveloped + nonresDeveloped), by = growthCenter ]
+  }
+
   dt_taz2 <- dt_taz2[, "convertedAgrLand" := pmin(AgriculturalAcres,
                                                  statewide_farmLand * accessCategorical / sum(accessCategorical))]
   
@@ -23,5 +31,8 @@ convertAgriculture <- function(dt_taz2, next_year){
   
   return(dt_taz2)
 }
+
+
+
 
 

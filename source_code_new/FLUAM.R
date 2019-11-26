@@ -12,8 +12,8 @@ if(runType == 1){
     next_year    <- Years[i]
     growth_year  <- Years[i]
 } else{
-    curr_year    <- Years[i]
-    next_year    <- Years[i+1]
+    curr_year    <- Years[i+1]
+    next_year    <- Years[i]
     growth_year  <- Years[i+1]
 }
 
@@ -113,11 +113,11 @@ dt_taz2     <- getRampDistance(dt_taz2, zone_nodes, other_nodes)
 #-------------------------------------------------------------------------------
 # Agriculture Land Conversion & Calculate Land Consumption
 #-------------------------------------------------------------------------------
-print("Computing Agri.Land Conversion & Land Conumption...")
-
+print("Computing Agri.Land Conversion...")
 source("source_code_new/3B_AgricultureLandConversion.R")
-dt_taz2 <- convertAgriculture(dt_taz2, next_year)
-  
+dt_taz2 <- convertAgriculture(dt_taz2, next_year, Agri_res_noRes_Flag)
+
+print("Computing Land Conumption...")  
 source("source_code_new/4_LandConspution_Variables.R")
 df_taz3 <- prepareLCVariables(dt_taz2, ctl)
 
@@ -136,6 +136,13 @@ source("source_code_new/6_EmploymentAllocation.R")
 ret         <- allocateEmployment(df_taz4, df_gc)
 df_taz4     <- ret$df_taz4
 empConverge <- ret$DRIEMPbyGrowthCenter
+
+#-------------------------------------------------------------------------------
+# FRATAR
+#-------------------------------------------------------------------------------
+print("Computing Land Conumption...")  
+source("source_code_new/4_LandConspution_Variables.R")
+df_taz3 <- prepareLCVariables(dt_taz2, ctl)
 
 #-------------------------------------------------------------------------------
 # FRATAR

@@ -1,6 +1,8 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
+// Function to compute distance from TAZ to closest ramps
+
 // [[Rcpp::export]]
 List pdistC(int x, int y, NumericVector x2, NumericVector y2, NumericVector N) {
   int n = x2.size();

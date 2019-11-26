@@ -47,7 +47,6 @@ exportFRATARTrips <- function(df_taz5, taz_fields, hhConverge, empConverge, out_
              select(taz_fields)
   
   # Export data
-   
   excel_data <- list("TAZ_Data" = df_taz6,
                      "debug" = df_taz5,
                      "hhConverge" = hhConverge, 
