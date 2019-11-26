@@ -38,7 +38,7 @@ writeFRATARInput <- function(df_taz5, fratar_file){
 
 # TODO: This is a separate file for next iteration
 # Function to export outputs
-exportFRATARTrips <- function(df_taz5, taz_fields, hhConverge, empConverge, out_file){
+exportFRATARTrips <- function(df_taz4, df_taz5, taz_fields, hhConverge, empConverge, out_file){
   
   # keep the standard input fields 
   df_taz6 <- df_taz5 %>%
@@ -48,9 +48,11 @@ exportFRATARTrips <- function(df_taz5, taz_fields, hhConverge, empConverge, out_
   
   # Export data
   excel_data <- list("TAZ_Data" = df_taz6,
-                     "debug" = df_taz5,
+                     "debug" = df_taz4,
+                     "debug_reallocate" = df_taz5,
                      "hhConverge" = hhConverge, 
-                     "empConverge" = empConverge )
+                     "empConverge" = empConverge,
+                     "hhconverge2" = hhConverge2)
   write.xlsx(excel_data, out_file) 
 }
 

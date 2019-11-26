@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
 # CalculateNewHousing
 #-------------------------------------------------------------------------------
-allocateHousing <- function(df_taz3, df_gc){
+allocateHousing <- function(df_taz3, df_gc, excludeDRI){
   # Append density constraints
 
   # keep track of landConsuptions
@@ -41,31 +41,35 @@ allocateHousing <- function(df_taz3, df_gc){
       summarise(DRIHHbyGrowthCenter = sum(DRI_Housing),
                 HHbyGrowthCenter = sum(HHAllocated)) %>%
       left_join(df_gc, by = "growthCenter") %>%
-      mutate(ScaleFactorForGrowthCenter = ifelse( HHbyGrowthCenter > 0, 
-                                                  (Control_HH - DRIHHbyGrowthCenter) / HHbyGrowthCenter, 0)) %>%
+      mutate(
+             # ScaleFactorForGrowthCenter = ifelse(HHbyGrowthCenter > 0 , 
+             #                                      (Control_HH - DRIHHbyGrowthCenter) / HHbyGrowthCenter, 0)
+             ScaleFactorForGrowthCenter = case_when(HHbyGrowthCenter > 0 & !excludeDRI ~ ((Control_HH - DRIHHbyGrowthCenter) / HHbyGrowthCenter),
+                                                    HHbyGrowthCenter > 0 & excludeDRI ~ (Control_HH  / HHbyGrowthCenter),
+                                                    TRUE ~ 0)) %>%
       select(growthCenter, ScaleFactorForGrowthCenter,  Control_HH)
     
     # Scale by growth centers
     df_temp <- df_temp %>% 
       left_join(DRIHHbyGrowthCenter, by = "growthCenter") %>%
-      select(-Control_HH) %>%
       mutate(resFactoredCons = pmin(1, landConsuptionHH * ScaleFactorForGrowthCenter),
              landConsuptionHH = resFactoredCons,          # Key to support iteration
              resFactoredDensity = rsgRd2,
-             HHAllocated = resVac3 * resFactoredCons * resFactoredDensity,
-             HHAllocated = ifelse(DRI_Housing > 0, 0, HHAllocated),
+             HHAllocated = ifelse(Control_HH > 0, 
+                                  resVac3 * resFactoredCons * resFactoredDensity,
+                                  0),
+             HHAllocated = ifelse(DRI_Housing > 0 , 0, HHAllocated),
              HHTotal = housing + HHAllocated + DRI_Housing
-
       ) %>%
-      select(-ScaleFactorForGrowthCenter)                # remove it from 
-    
-    # df_temp %>% filter(growthCenter == 20) %>% head()
+      select(-ScaleFactorForGrowthCenter, -Control_HH)                
     
     # Check for convergence
     DRIHHbyGrowthCenter <- df_temp %>%
       select(growthCenter, DRI_Housing, HHAllocated) %>%
       group_by(growthCenter) %>%
-      summarise(HH_model = sum(DRI_Housing + HHAllocated)) %>%
+      summarise(HH_model = ifelse(excludeDRI, 
+                                  sum(HHAllocated),
+                                  sum(DRI_Housing + HHAllocated))) %>%
       left_join(df_gc, by = "growthCenter") %>%
       mutate(diff = abs(HH_model - Control_HH),
              converge = ifelse(diff > 100, -100, 1))

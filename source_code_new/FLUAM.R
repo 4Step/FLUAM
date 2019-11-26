@@ -127,7 +127,7 @@ df_taz3 <- prepareLCVariables(dt_taz2, ctl)
 print("Allocating Housing...")
 
 source("source_code_new/5_HousingAllocation.R")
-ret        <- allocateHousing(df_taz3, df_gc)
+ret        <- allocateHousing(df_taz3, df_gc, FALSE)
 df_taz4    <- ret$df_taz4
 hhConverge <- ret$DRIHHbyGrowthCenter
 
@@ -138,25 +138,63 @@ df_taz4     <- ret$df_taz4
 empConverge <- ret$DRIEMPbyGrowthCenter
 
 #-------------------------------------------------------------------------------
-# FRATAR
+# Recheck Available Land
 #-------------------------------------------------------------------------------
-print("Computing Land Conumption...")  
-source("source_code_new/4_LandConspution_Variables.R")
-df_taz3 <- prepareLCVariables(dt_taz2, ctl)
+print("Re-allocating Housing after employment..") 
+
+# Get "unallocated" units as "new" targets
+df_gc2 <- hhConverge %>% 
+          select(-Control_HH) %>%
+          mutate(Control_HH = ifelse(diff > 1, diff, 0)) %>%
+          select(growthCenter, Control_HH, Control_EMP)
+
+# Counties with "unmet" demand
+unallocatedCounties <- df_gc2 %>% filter(Control_HH > 0) %>% pull(growthCenter)
+
+# compute allocated land and move any remaining land & agriculture land into
+source("source_code_new/8_Reallocate_Unconsumed_EMPLand.R")
+df_taz3b <- computeRemainingLand(df_taz4, unallocatedCounties, FALSE)
+
+# run HHAllocation for un-converged counties
+df_taz3c   <- df_taz3b %>% select(colnames(df_taz3))
+ret        <- allocateHousing(df_taz3c, df_gc2, TRUE)
+df_taz5    <- ret$df_taz4
+hhConverge2 <- ret$DRIHHbyGrowthCenter
+
+# Append EMP fields from before
+empAllocatedFields <- colnames(df_taz4)
+hhAllocatedFields <- colnames(df_taz5)
+
+addFields <- empAllocatedFields[!(empAllocatedFields %in% hhAllocatedFields)]
+df_taz4b <- df_taz4 %>% select(TAZ, addFields)
+
+df_taz5 <- df_taz5 %>%
+          left_join(df_taz4b, by = "TAZ")
+
+# Compute final land categories ()
+df_taz3d <- df_taz3b %>% 
+            select(TAZ, empSpentLand, hhSpentLand, 
+                   resAvailableAcres0,  nonresAvailableAcres0,
+                   resAvailableAcres_net, nonresAvailableAcres_net,
+                   resAvailableAcres1, nonresAvailableAcres1, extraAgriLand)
+  
+df_taz5a <- df_taz5 %>%
+            left_join(df_taz3d, by = "TAZ")
+df_taz5b <- computeNewAvailableLand(df_taz5a, Agri_res_noRes_Flag)
 
 #-------------------------------------------------------------------------------
 # FRATAR
 #-------------------------------------------------------------------------------
 print("Computing Trips / Fratar Inputs...")
 source("source_code_new/7_Prepare_Fratar_Inputs.R")
-df_taz5 <- computeFRATAR(df_taz4)
+df_taz6 <- computeFRATAR(df_taz5b)
 
 print("Writing Outputs...")
 fratar_file <- paste0("Output/",next_year,"_FratarInput.txt")  
-writeFRATARInput(df_taz5, fratar_file)
+writeFRATARInput(df_taz6, fratar_file)
 
 out_file <- paste0("Output/",next_year,"_FLUAM_Output.xlsx")
-exportFRATARTrips(df_taz5, taz_fields, hhConverge, empConverge, out_file)
+exportFRATARTrips(df_taz4, df_taz6, taz_fields, hhConverge, empConverge, out_file)
 
 #-------------------------------------------------------------------------------
 
