@@ -33,6 +33,7 @@ global_Flag = 0
 # 1 = res/ non-res based on  2015 zonal developed ratio
 # 2 = res/ non-res based on  2015 countywide developed ratio  
 Agri_res_noRes_Flag = 2
+rate = 5  # 3 percent / year - should be county specific
 
 # Read control file
 ctl_file     <- "Parameter/FLUAM_Properties.csv"
@@ -53,8 +54,8 @@ max_iter <- 20
 # Run FLUAM for each year
 start_time <- Sys.time()
 
-# for(i in 2:length(Years)){
-for(i in 2:2){
+for(i in 2:length(Years)){
+# for(i in 2:2){
   print("*******************************************************")
   print(paste("Computing FLUAM :", Years[i]))
   source("source_code_new/FLUAM.R")
@@ -68,7 +69,7 @@ end_time - start_time
 if(useMPO_Controls){
 }
 Years      <- c(2015, 2020, 2025, 2030, 2035, 2040, 2045, 2050)
-RunDir     <- c(0,     1,    1,    -1,    -1,    0,    1,    1)
+RunDir     <- c(0,     -1,    -1,   -1,   -1,    0,    1,    1)
 
 # (breakdown by anchor RunDir == 0)
 anchors <- Years[which(RunDir == 0)]

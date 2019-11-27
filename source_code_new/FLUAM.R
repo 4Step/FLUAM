@@ -64,7 +64,16 @@ df_taz <- updateDensityThresholds(df_taz, df_dc)
 
 # append DRI 
 df_taz <- appendDRI(df_taz, df_DRI)
-      
+
+#-------------------------------------------------------------------------------
+# Land Consumption Summary 
+#-------------------------------------------------------------------------------
+source("source_code_new/9_Summary_Land_Consumption.R")
+before <- summariseLandByCategory(df_taz)
+
+df_taz <- recomputeAvailableShares(df_taz, Agri_res_noRes_Flag) 
+before2 <- summariseLandByCategory(df_taz)
+
 #-------------------------------------------------------------------------------
 # Compute accessibilities
 #-------------------------------------------------------------------------------
@@ -115,7 +124,7 @@ dt_taz2     <- getRampDistance(dt_taz2, zone_nodes, other_nodes)
 #-------------------------------------------------------------------------------
 print("Computing Agri.Land Conversion...")
 source("source_code_new/3B_AgricultureLandConversion.R")
-dt_taz2 <- convertAgriculture(dt_taz2, next_year, Agri_res_noRes_Flag)
+dt_taz2 <- convertAgriculture(dt_taz2, next_year, curr_year, rate, Agri_res_noRes_Flag)
 
 print("Computing Land Conumption...")  
 source("source_code_new/4_LandConspution_Variables.R")
@@ -153,14 +162,23 @@ unallocatedCounties <- df_gc2 %>% filter(Control_HH > 0) %>% pull(growthCenter)
 
 # compute allocated land and move any remaining land & agriculture land into
 source("source_code_new/8_Reallocate_Unconsumed_EMPLand.R")
-df_taz3b <- computeRemainingLand(df_taz4, unallocatedCounties, FALSE)
+
+df_taz4a <- df_taz4 %>% 
+            mutate(HHAllocated1 = HHAllocated, 
+                   HHTotal1 = HHTotal)
+
+df_taz3b <- computeRemainingLand(df_taz4a, unallocatedCounties, FALSE)
 
 # run HHAllocation for un-converged counties
-df_taz3c   <- df_taz3b %>% select(colnames(df_taz3))
+df_taz3c   <- df_taz3b %>% 
+              select(colnames(df_taz3), HHAllocated1)
 ret        <- allocateHousing(df_taz3c, df_gc2, TRUE)
-df_taz5    <- ret$df_taz4
-hhConverge2 <- ret$DRIHHbyGrowthCenter
+df_taz5    <- ret$df_taz4 %>%
+              mutate(HHTotal = pmax(0, HHAllocated1 + HHAllocated + housing))
 
+hhConverge2 <- ret$DRIHHbyGrowthCenter
+              
+                
 # Append EMP fields from before
 empAllocatedFields <- colnames(df_taz4)
 hhAllocatedFields <- colnames(df_taz5)
@@ -182,6 +200,7 @@ df_taz5a <- df_taz5 %>%
             left_join(df_taz3d, by = "TAZ")
 df_taz5b <- computeNewAvailableLand(df_taz5a, Agri_res_noRes_Flag)
 
+
 #-------------------------------------------------------------------------------
 # FRATAR
 #-------------------------------------------------------------------------------
@@ -192,10 +211,51 @@ df_taz6 <- computeFRATAR(df_taz5b)
 print("Writing Outputs...")
 fratar_file <- paste0("Output/",next_year,"_FratarInput.txt")  
 writeFRATARInput(df_taz6, fratar_file)
+df_taz7 <- df_taz6 %>%
+           select(-housing, -employment) %>%
+           rename(housing = HHTotal, employment = EmpTotal) %>%
+           select(taz_fields)
 
+#-------------------------------------------------------------------------------
+# Land Consumption Summary 
+#-------------------------------------------------------------------------------
+after  <- summariseLandByCategory(df_taz7)
+
+# compare state-wide
+x1 <- before2$lc_state - before$lc_state
+x2 <- after$lc_state - before2$lc_state
+y <- rbind(before$lc_state, before2$lc_state, after$lc_state, x1, x2) 
+
+stateSum <- data.frame(Year = c(curr_year, curr_year, next_year, "Adj_Available", "Diff"), y )
+
+w1 <- before$lc_county
+w2 <- after$lc_county 
+x1 <- w2 - w1
+names(w1) <- paste(curr_year, names(w1), sep = ".")
+names(w2) <- paste(next_year, names(w2), sep = ".")
+names(x1) <- paste("Diff", names(w2), sep = ".")
+countySum <- cbind(w1, w2, x1) %>% 
+             as.data.frame()
+#-------------------------------------------------------------------------------
+# Excel Output
+#-------------------------------------------------------------------------------
 out_file <- paste0("Output/",next_year,"_FLUAM_Output.xlsx")
-exportFRATARTrips(df_taz4, df_taz6, taz_fields, hhConverge, empConverge, out_file)
+# out_file <- paste0("Output/",next_year, "_", curr_year,"_FLUAM_Output.xlsx")
+# exportFRATARTrips(df_taz4, df_taz6, taz_fields, hhConverge, empConverge, out_file)
+# keep the standard input fields 
 
+# Export data
+excel_data <- list("TAZ_Data" = df_taz7,
+                   "debug" = df_taz4,
+                   "debug_reallocate" = df_taz6,
+                   "hhConverge" = hhConverge, 
+                   "empConverge" = empConverge,
+                   "hhconverge2" = hhConverge2,
+                   "SummaryCounty" = countySum, 
+                   "SummaryFL" = stateSum
+                   )
+
+write.xlsx(excel_data, out_file) 
 #-------------------------------------------------------------------------------
 
 

@@ -20,8 +20,8 @@ computeNewAvailableLand <- function(df_taz5a, Agri_res_noRes_Flag){
                  # hhSpentLand = After first round of hh allocation, emp was allocated and the net emp land for 
                  # used to allocated "unmet" demand, thus hhSpentLand1 shows the further 
                  # land consumption by "unmet" demand
-                 resDeveloped = resDeveloped + hhSpentLand + hhSpentLand1,
-                 nonresDeveloped = nonresDeveloped + empSpentLand 
+                 # resDeveloped = resDeveloped + hhSpentLand + hhSpentLand1,
+                 # nonresDeveloped = nonresAvailableAcres_net
                  )
   
   # Split total Available into res  & non-res available (TAZ based)
@@ -47,7 +47,29 @@ computeNewAvailableLand <- function(df_taz5a, Agri_res_noRes_Flag){
   # Split total Available into res & non-res available ()
   temp <- temp %>% 
           mutate(resAvailableAcres    = totalAvailable * resDevShare2,
-                 nonresAvailableAcres = totalAvailable - resAvailableAcres)
+                 nonresAvailableAcres = totalAvailable - resAvailableAcres,
+                 # Check for missing area (this is allocated hh, emp developed land)
+                 new_total_check      = resAvailableAcres +	
+                                        nonresAvailableAcres +	 
+                                        resDeveloped +	 
+                                        nonresDeveloped +
+                                        undevelopableAcres 	+
+                                        AgriculturalAcres,
+                 total_area_check     = totalAcres - new_total_check,
+                 
+                 # Allocated missing area as developed by same shares at county or zone
+                 resDeveloped         = resDeveloped + pmax(total_area_check * resDevShare2, 0),
+                 nonresDeveloped      = resDeveloped + pmax(total_area_check *  (1 - resDevShare2), 0),
+                 new_total_check      = resAvailableAcres +	
+                                        nonresAvailableAcres +	 
+                                        resDeveloped +	 
+                                        nonresDeveloped +
+                                        undevelopableAcres 	+
+                                        AgriculturalAcres,
+                 # Recheck and if there are any assign it to non-res available
+                 total_area_check     = totalAcres - new_total_check,
+                 nonresAvailableAcres = pmax(nonresAvailableAcres + total_area_check, 0)
+)
   
   return(temp)
 }

@@ -16,7 +16,10 @@ prepareLCVariables <- function(dt_taz2, ctl){
            accessChange = ifelse(cur_AdjTTimeWgtByHH_Emp > 0, 
                                  pmin(1,(avgAdjTTimeWgtByHH_Emp - cur_AdjTTimeWgtByHH_Emp) / cur_AdjTTimeWgtByHH_Emp), 1 ),
            resDensity = ifelse(resDeveloped > 0,
-                               pmax(0, log( (housing / resDeveloped) + 0.01) ), 
+                               # FLUAM 2.1 uses existing density but after allocation, we don't compute consumed land
+                               # Thus it creates higher density
+                               # pmax(0, log( (housing / resDeveloped ) + 0.01) ), 
+                               pmax(0, log( (housing / (resDeveloped + availableAcres)) + 0.01) ), 
                                0),
            llache = log(avgAdjTTimeWgtByHH_Emp + 3),
            boolUGB = ifelse(growthBoundary == 1, 1, 0),

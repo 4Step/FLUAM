@@ -16,9 +16,11 @@ allocateEmployment <- function(df_taz4, df_gc) {
     # Append density constraints
     df_temp <- df_taz4 %>%
       mutate(nonresDensity = ifelse(nonresDeveloped + 1 > 0, 
-                                    employment / (nonresDeveloped + 1),
+                                    # employment / (nonresDeveloped + 1), # FLUAM 2.1
+                                     employment / (nonresDeveloped + nonresAvailableAcres + 1), 
                                     0),
-             empVacLand = nonresAvailableAcres,
+             # empVacLand = nonresAvailableAcres, # FLUAM 2.1
+             empVacLand = nonresAvailableAcres + nonresDeveloped,
              rsg_rd     = pmax(0, landDensityEmp),
              density    = ifelse(totalAcres > 1000 , 
                                  ifelse(nonresDensity > 50, rsg_rd, pmax(5, nonresDensity)),

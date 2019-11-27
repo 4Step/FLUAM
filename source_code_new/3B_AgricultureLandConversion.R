@@ -1,8 +1,8 @@
 # convert agriculture land to res and non-res available
-convertAgriculture <- function(dt_taz2, next_year, Agri_res_noRes_Flag){
+convertAgriculture <- function(dt_taz2, next_year, curr_year, rate, Agri_res_noRes_Flag){
   
   # This is always computed from the base land
-  statewide_farmLand <- dt_taz2[ , sum(AgriculturalAcres)] * (1.5 / 100) * (next_year - 2015)
+  statewide_farmLand <- dt_taz2[ , sum(AgriculturalAcres)] * (rate / 100) * (next_year - curr_year)
   
   dt_taz2 <- dt_taz2[ , "resDevShare" := 0]
   if(Agri_res_noRes_Flag == 1){

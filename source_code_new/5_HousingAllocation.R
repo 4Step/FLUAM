@@ -17,8 +17,11 @@ allocateHousing <- function(df_taz3, df_gc, excludeDRI){
     
     # Compute raw HH allocation
     df_temp <- df_taz3 %>% 
-      mutate(resDensity = ifelse(resDeveloped > 0, housing / resDeveloped, 0),
-             resVac3    = resAvailableAcres,
+      mutate(
+             # resDensity = ifelse(resDeveloped > 0, housing / resDeveloped, 0),
+             resDensity = ifelse(resDeveloped > 0, housing / (resDeveloped + resAvailableAcres), 0),
+             # resVac3    = resAvailableAcres, # FLUAM 2.1
+             resVac3    = resAvailableAcres + resDeveloped, 
              expDensity = exp(landDensityHH),
              rsgRd2     = ifelse(resDensity / expDensity < 20 & totalAcres < 1000 ,  
                                  pmax( expDensity, resDensity), 

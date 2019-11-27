@@ -55,14 +55,15 @@ loadSEData <- function(taz_pd_file, year){
     
     SE_file <- paste0("Output/",year, "_FLUAM_Output.xlsx") 
     
-    df_se   <- read.xlsx(SE_file, sheet = "TAZ_Data") %>%
-      # select(TAZ,  housing = HHTotal, employment = EmpTotal)
-      select(TAZ,  housing, employment)
-    
-    # Overwrite base values with computed values
-    df_taz <- df_pd %>% 
-      select(-housing, -employment) %>%
-      left_join(df_se, by = "TAZ")
+    df_taz   <- read.xlsx(SE_file, sheet = "TAZ_Data") 
+    #    %>%
+    #   # select(TAZ,  housing = HHTotal, employment = EmpTotal)
+    #   select(TAZ,  housing, employment)
+    # 
+    # # Overwrite base values with computed values
+    # df_taz <- df_pd %>% 
+    #   select(-housing, -employment) %>%
+    #   left_join(df_se, by = "TAZ")
     
     # Res / Non-Res developed land remains same for all years (something to address in the next version)
     # There is a way to convert under redevelopment but still that conversion rate 
@@ -71,10 +72,28 @@ loadSEData <- function(taz_pd_file, year){
     df_taz <- df_pd
   }
   
+  
+  
   return(df_taz)
 }
+#-------------------------------------------------------------------------------
+# Function to recompute available land shares
+# Recompute residential and non-residential shares based on exisitng developed ratio by county
 
-
+recomputeAvailableShares <- function(df_taz, Agri_res_noRes_Flag)
+  if(Agri_res_noRes_Flag == 2){
+      df_taz <- df_taz %>%
+                group_by(growthCenter) %>%
+                mutate(resDevShare0 = ifelse(sum(resDeveloped + nonresDeveloped) > 0,
+                                        sum(resDeveloped) / sum(resDeveloped + nonresDeveloped),
+                                        0.5),
+                       totalAvailable = resAvailableAcres + nonresAvailableAcres,
+                       resAvailableAcres = totalAvailable * resDevShare0,
+                       nonresAvailableAcres = totalAvailable - resAvailableAcres) %>%
+                ungroup() %>%
+                select(-totalAvailable, -resDevShare0)
+  return(df_taz)
+  }
 #-------------------------------------------------------------------------------
 # Function to load skims
 loadSkim <- function(skim_year, max_taz) {
@@ -117,6 +136,10 @@ getGrowthTarget <- function(gc_file, useMPO_Controls, growth_year){
     sheetName <- "BEBR_Increments"
   }
   df_gc   <- read.xlsx(gc_file, sheet = sheetName)
+  
+  # run the extreme growth 2015 vs 2050
+ # df_gc <- df_gc %>%
+ #    select(growthCenter = County, Control_HH = Total35y.HH, Control_EMP = Total35y.EMP)
   
   # Select (assumes MPO data is also like this)
   df_gc <- df_gc %>% 
@@ -198,8 +221,13 @@ getDRIs <- function(DRI_file, curr_year, next_year, runType, global_Flag){
                     DRI_Employment = paste(next_DRI_year, "DRI_EMP", sep ="."))
       
       # colnames(df_DRI) <- c("TAZ", "DRI_Housing", "DRI_Employment")
+      # run the extreme growth 2015 vs 2050
+     # df_DRI <- df_DRI %>%
+     #           select(TAZ, DRI_Housing = Total35y.DRI_HH, DRI_Employment = Total35y.DRI_EMP)
     } 
     
+
+  
   return(df_DRI)
 }
 
