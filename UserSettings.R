@@ -33,7 +33,7 @@ global_Flag = 0
 # 1 = res/ non-res based on  2015 zonal developed ratio
 # 2 = res/ non-res based on  2015 countywide developed ratio  
 Agri_res_noRes_Flag = 2
-rate = 5  # 3 percent / year - should be county specific
+rate = 1.5 # 3 percent / year - should be county specific
 
 # Read control file
 ctl_file     <- "Parameter/FLUAM_Properties.csv"

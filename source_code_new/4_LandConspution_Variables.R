@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
 # # Compute Land Consumption variables
 #-------------------------------------------------------------------------------
-prepareLCVariables <- function(dt_taz2, ctl){
+prepareLCVariables <- function(dt_taz2, ctl, includeDev){
   df_taz3 <- dt_taz2 %>% 
     setDF() %>%
     mutate(distToRamp = RmpDist,
@@ -16,10 +16,7 @@ prepareLCVariables <- function(dt_taz2, ctl){
            accessChange = ifelse(cur_AdjTTimeWgtByHH_Emp > 0, 
                                  pmin(1,(avgAdjTTimeWgtByHH_Emp - cur_AdjTTimeWgtByHH_Emp) / cur_AdjTTimeWgtByHH_Emp), 1 ),
            resDensity = ifelse(resDeveloped > 0,
-                               # FLUAM 2.1 uses existing density but after allocation, we don't compute consumed land
-                               # Thus it creates higher density
-                               # pmax(0, log( (housing / resDeveloped ) + 0.01) ), 
-                               pmax(0, log( (housing / (resDeveloped + availableAcres)) + 0.01) ), 
+                               pmax(0, log( (housing / resDeveloped ) + 0.01) ),
                                0),
            llache = log(avgAdjTTimeWgtByHH_Emp + 3),
            boolUGB = ifelse(growthBoundary == 1, 1, 0),
@@ -30,6 +27,21 @@ prepareLCVariables <- function(dt_taz2, ctl){
            decile2 = as.numeric(nonResDecile [accessCategorical]),
            decile3 = as.numeric(resDenDecile [accessCategorical]) 
     )
+  
+  # The entire zone can be re-developed (required in counties like Broward where available land is insufficient to accommodate the entire BEBR growth )
+  # FLUAM 2.1 uses existing density but after allocation, we don't compute consumed land
+  # Thus it creates higher density
+  if(includeDev){
+     df_taz3 <- df_taz3 %>%
+                mutate( 
+                       percentDeveloped = ifelse(devAcres + availableAcres > 0 & availableAcres > 1 , 
+                                     devAcres / ( devAcres + availableAcres),
+                                     1),
+                       resDensity = ifelse(
+                           resDeveloped > 0,
+                           pmax(0, log( (housing / (resDeveloped + availableAcres)) + 0.01) ),
+                           0))
+  }
   
   # Compute residential land consumption (initial before iterating)
   df_taz3 <- df_taz3 %>% 

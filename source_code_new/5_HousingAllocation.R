@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
 # CalculateNewHousing
 #-------------------------------------------------------------------------------
-allocateHousing <- function(df_taz3, df_gc, excludeDRI){
+allocateHousing <- function(df_taz3, df_gc, ctl, excludeDRI, includeDev){
   # Append density constraints
 
   # keep track of landConsuptions
@@ -15,23 +15,52 @@ allocateHousing <- function(df_taz3, df_gc, excludeDRI){
     iter = iter + 1
     print(paste("HH allocation iteration: ", iter))
     
+    #---------------------------------------------------------------------------
+    # Compute Land ("vacant" or "redev + vacant" to be used for allocation
+    if(includeDev){
+      # The entire zone can be re-developed (required in counties like Broward 
+      # where available land is insufficient to accommodate the entire BEBR growth )
+      # FLUAM 2.1 uses existing density but after allocation, we don't compute consumed land
+      # Thus it creates higher density
+      df_temp <- df_taz3 %>% 
+                 # # Recompute Land Density (4_LandConspution_Variables.R)
+                 # mutate(resDensity = ifelse(
+                 #           resDeveloped > 0,
+                 #           pmax(0, log( (housing / (resDeveloped + availableAcres)) + 0.01) ), 
+                 #           0),
+                 #        landDensityHH = as.numeric(ctl$d_resConstantCoef) + 
+                 #                         as.numeric(ctl$d_resDevelopmentDensCoef) * resDensity + 
+                 #                         as.numeric(ctl$d_resAccessChangeCoef) * accessChange + 
+                 #                         as.numeric(ctl$d_resSmallVacantCoef) *  boolAcre1 +
+                 #                         as.numeric(ctl$d_resLargeVacantCoef) *  boolAcre1k +
+                 #                         decile3) %>%
+                 # Housing allocation variable
+                 mutate( resDensity = ifelse(resDeveloped > 0, 
+                                             housing / (resDeveloped + resAvailableAcres), 
+                                             0),
+                         resVac3    = resAvailableAcres)
+    } else {
+      df_temp <- df_taz3 %>% 
+                 mutate(resDensity = ifelse(resDeveloped > 0, 
+                                            housing / resDeveloped, 
+                                            0),
+                        resVac3    = resAvailableAcres + resDeveloped)
+    }
+    #---------------------------------------------------------------------------
+    
     # Compute raw HH allocation
-    df_temp <- df_taz3 %>% 
-      mutate(
-             # resDensity = ifelse(resDeveloped > 0, housing / resDeveloped, 0),
-             resDensity = ifelse(resDeveloped > 0, housing / (resDeveloped + resAvailableAcres), 0),
-             # resVac3    = resAvailableAcres, # FLUAM 2.1
-             resVac3    = resAvailableAcres + resDeveloped, 
-             expDensity = exp(landDensityHH),
-             rsgRd2     = ifelse(resDensity / expDensity < 20 & totalAcres < 1000 ,  
-                                 pmax( expDensity, resDensity), 
-                                 expDensity ),
-             rsgRd2     = ifelse(housingDensityConstraint != 1 & rsgRd2 > housingDensityConstraint,
-                                 housingDensityConstraint, 
-                                 rsgRd2),
-             HHAllocated = resVac3 * rsgRd2 * landConsuptionHH,
-             HHAllocated = ifelse(DRI_Housing > 0, 0, HHAllocated)
-      )
+    df_temp <- df_temp %>%
+                mutate(
+                       expDensity = exp(landDensityHH),
+                       rsgRd2     = ifelse(resDensity / expDensity < 20 & totalAcres < 1000 ,  
+                                           pmax( expDensity, resDensity), 
+                                           expDensity ),
+                       rsgRd2     = ifelse(housingDensityConstraint != 1 & rsgRd2 > housingDensityConstraint,
+                                           housingDensityConstraint, 
+                                           rsgRd2),
+                       HHAllocated = resVac3 * rsgRd2 * landConsuptionHH,
+                       HHAllocated = ifelse(DRI_Housing > 0, 0, HHAllocated)
+                )
     # Iteration 
     iter_lcHH[[iter]]   <- df_temp$landConsuptionHH
     iter_HH[[iter]]   <- df_temp$HHAllocated
@@ -47,9 +76,11 @@ allocateHousing <- function(df_taz3, df_gc, excludeDRI){
       mutate(
              # ScaleFactorForGrowthCenter = ifelse(HHbyGrowthCenter > 0 , 
              #                                      (Control_HH - DRIHHbyGrowthCenter) / HHbyGrowthCenter, 0)
-             ScaleFactorForGrowthCenter = case_when(HHbyGrowthCenter > 0 & !excludeDRI ~ ((Control_HH - DRIHHbyGrowthCenter) / HHbyGrowthCenter),
-                                                    HHbyGrowthCenter > 0 & excludeDRI ~ (Control_HH  / HHbyGrowthCenter),
-                                                    TRUE ~ 0)) %>%
+             ScaleFactorForGrowthCenter = case_when(
+                 HHbyGrowthCenter > 0 & !excludeDRI ~ ((Control_HH - DRIHHbyGrowthCenter) / HHbyGrowthCenter),
+                 HHbyGrowthCenter > 0 & excludeDRI ~ (Control_HH  / HHbyGrowthCenter),
+                 TRUE ~ 0)
+             ) %>%
       select(growthCenter, ScaleFactorForGrowthCenter,  Control_HH)
     
     # Scale by growth centers
