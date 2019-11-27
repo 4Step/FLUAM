@@ -224,7 +224,7 @@ if(reRun_HH_for_UnMetCounties){
     
     df_taz3c    <- prepareLCVariables(df_taz3c, ctl, includeDev)
     
-    ret        <- allocateHousing(df_taz3c, df_gc2, ctl, excludeDRI, includeDev)
+    ret        <- allocateHousing(df_taz3c, df_gc2, excludeDRI, includeDev)
     
     df_taz5    <- ret$df_taz4 %>%
                   mutate(HHTotal = pmax(0, HHAllocated1 + HHAllocated + housing))
