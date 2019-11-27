@@ -23,28 +23,18 @@ allocateHousing <- function(df_taz3, df_gc, ctl, excludeDRI, includeDev){
       # FLUAM 2.1 uses existing density but after allocation, we don't compute consumed land
       # Thus it creates higher density
       df_temp <- df_taz3 %>% 
-                 # # Recompute Land Density (4_LandConspution_Variables.R)
-                 # mutate(resDensity = ifelse(
-                 #           resDeveloped > 0,
-                 #           pmax(0, log( (housing / (resDeveloped + availableAcres)) + 0.01) ), 
-                 #           0),
-                 #        landDensityHH = as.numeric(ctl$d_resConstantCoef) + 
-                 #                         as.numeric(ctl$d_resDevelopmentDensCoef) * resDensity + 
-                 #                         as.numeric(ctl$d_resAccessChangeCoef) * accessChange + 
-                 #                         as.numeric(ctl$d_resSmallVacantCoef) *  boolAcre1 +
-                 #                         as.numeric(ctl$d_resLargeVacantCoef) *  boolAcre1k +
-                 #                         decile3) %>%
-                 # Housing allocation variable
+                 # Includes "redevelopment"
                  mutate( resDensity = ifelse(resDeveloped > 0, 
                                              housing / (resDeveloped + resAvailableAcres), 
                                              0),
-                         resVac3    = resAvailableAcres)
+                         resVac3    = resAvailableAcres + resDeveloped)
     } else {
       df_temp <- df_taz3 %>% 
+                 # Excludes "redevelopment"
                  mutate(resDensity = ifelse(resDeveloped > 0, 
                                             housing / resDeveloped, 
                                             0),
-                        resVac3    = resAvailableAcres + resDeveloped)
+                        resVac3    = resAvailableAcres)
     }
     #---------------------------------------------------------------------------
     
