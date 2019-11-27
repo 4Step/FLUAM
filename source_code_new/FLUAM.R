@@ -140,7 +140,7 @@ source("source_code_new/5_HousingAllocation.R")
 excludeDRI <- FALSE  # excludes DRI from CountyGrowth Target
 
 
-ret        <- allocateHousing(df_taz3, df_gc,  ctl, excludeDRI, includeDev)
+ret        <- allocateHousing(df_taz3, df_gc, excludeDRI, includeDev)
 df_taz4    <- ret$df_taz4
 hhConverge <- ret$DRIHHbyGrowthCenter %>%
               select(growthCenter, Control_HH, HH_model, unMet_HH = diff, HH_Flag = converge)

@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
 # CalculateNewHousing
 #-------------------------------------------------------------------------------
-allocateHousing <- function(df_taz3, df_gc, ctl, excludeDRI, includeDev){
+allocateHousing <- function(df_taz3, df_gc, excludeDRI, includeDev){
   # Append density constraints
 
   # keep track of landConsuptions
