@@ -46,6 +46,7 @@ gc_file      <- "Input/controlTotals/FLUAM_Growth_Controls.xlsx"
 dc_file      <- "Input/base_data/new_density_constraints_at_TAZ_v2.csv"
 # dc_file      <- "reference/FLUAM_2_1_DensityConstraints.csv"
 DRI_file     <- "Input/controlTotals/FLUAM_DRI.xlsx"
+ext_Stn_file <- "Input/controlTotals/External_Stns_GrowthFactors.xlsx"
 
 # Max iterations 
 max_iter <- 20

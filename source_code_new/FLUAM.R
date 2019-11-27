@@ -218,9 +218,11 @@ if(reRun_HH_for_UnMetCounties){
     print("Re-allocating 'Unmet' Housing towards redevelopment...") 
     excludeDRI <- TRUE  # excludes DRI from CountyGrowth Target
     includeDev <- TRUE  # adds existing developed land towards redevelopment
-  
+    
     df_taz3c   <- df_taz3b %>% 
                   select(colnames(df_taz3), HHAllocated1)
+    
+    df_taz3c    <- prepareLCVariables(df_taz3c, ctl, includeDev)
     
     ret        <- allocateHousing(df_taz3c, df_gc2, ctl, excludeDRI, includeDev)
     
@@ -237,6 +239,8 @@ if(reRun_EMP_for_UnMetCounties){
     includeDev <- TRUE  # adds existing developed land towards redevelopment
     
     print("Re-allocating 'Unmet' Employment towards redevelopment...")
+    df_taz3     <- prepareLCVariables(dt_taz2, ctl, includeDev)
+    
     ret         <- allocateEmployment(df_taz5, df_gc, excludeDRI, includeDev)
     df_taz5     <- ret$df_taz4
     empConverge2  <- ret$DRIEMPbyGrowthCenter
@@ -282,7 +286,8 @@ df_taz6 <- computeFRATAR(df_taz5b)
 
 print("Writing Outputs...")
 fratar_file <- paste0("Output/",next_year,"_FratarInput.txt")  
-writeFRATARInput(df_taz6, fratar_file)
+writeFRATARInput(df_taz6, fratar_file, ext_Stn_file, next_year)
+
 df_taz7 <- df_taz6 %>%
            select(-housing, -employment) %>%
            rename(housing = HHTotal, employment = EmpTotal) %>%
