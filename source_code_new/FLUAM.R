@@ -150,7 +150,7 @@ source("source_code_new/6_EmploymentAllocation.R")
 ret         <- allocateEmployment(df_taz4, df_gc, excludeDRI, includeDev)
 df_taz4     <- ret$df_taz4
 empConverge <- ret$DRIEMPbyGrowthCenter %>%
-              select(growthCenter, Control_EMP, EMP_model, unMet_EMP = diff, EMP_Flag = converge)
+               select(growthCenter, Control_EMP, EMP_model, unMet_EMP = diff, EMP_Flag = converge)
 
 #-------------------------------------------------------------------------------
 # Recheck Available Land
@@ -166,6 +166,7 @@ df_gc2 <- hhConverge %>%
 # unallocatedCounties <- df_gc2 %>% filter(Control_HH > 0) %>% pull(growthCenter)
 unmet_HH_Counties   <- df_gc2 %>% filter(Control_HH > 0) %>% pull(growthCenter)
 unmet_EMP_Counties  <- df_gc2 %>% filter(Control_EMP > 0) %>% pull(growthCenter)
+unallocatedCounties <- unique(unmet_HH_Counties, unmet_EMP_Counties)
 
 # Choose whether to re-run or not
 if(length(unmet_HH_Counties) > 0 ) {
@@ -193,17 +194,16 @@ if(useEMPLand_for_resDev){
   
   df_taz4a <- df_taz4 %>% 
               mutate(HHAllocated1 = HHAllocated, 
-                     HHTotal1 = HHTotal)
-  
-  df_taz3b <- computeRemainingLand(df_taz4a, unallocatedCounties, FALSE)
-  
-} else{
-  
-  df_taz3b <- df_taz4 %>% 
-              mutate(HHAllocated1 = HHAllocated, 
                      HHTotal1 = HHTotal,
                      EmpAllocated1 = EmpAllocated,
                      EmpTotal = EmpTotal)
+  
+  df_taz3b <- assign_unused_EMPLand(df_taz4a, unallocatedCounties, FALSE)
+  
+} else{
+  
+  df_taz3b <- df_taz4 
+
 }
 
 #-------------------------------------------------------------------------------
@@ -212,70 +212,86 @@ if(useEMPLand_for_resDev){
 # Run this for only counties that are not converges 
 # (in other words, reallocated demand to redevelopment zones)
 
-# Allocated unmet EMP towards redevelopment
-if(reRun_HH_for_UnMetCounties){
+# Allocated unmet HH & EMP towards redevelopment
+if(reRun_HH_for_UnMetCounties || reRun_EMP_for_UnMetCounties) {
     
-    print("Re-allocating 'Unmet' Housing towards redevelopment...") 
     excludeDRI <- TRUE  # excludes DRI from CountyGrowth Target
     includeDev <- TRUE  # adds existing developed land towards redevelopment
     
-    df_taz3c   <- df_taz3b %>% 
-                  select(colnames(df_taz3), HHAllocated1)
+    # crave out unConverged counties
+    df_unmet <- df_taz4 %>% 
+                filter(growthCenter %in% unallocatedCounties) %>%
+                mutate(housing0 = housing,
+                       employment0 = employment,
+                       housing = HHTotal, 
+                       employment = EmpTotal,
+                       HHAllocated1 = HHAllocated,  
+                       EmpAllocated1 = EmpAllocated) %>%
+                select(colnames(df_taz3), 
+                       housing0, employment0, 
+                       HHAllocated1, EmpAllocated1)
     
-    df_taz3c    <- prepareLCVariables(df_taz3c, ctl, includeDev)
+    df_gcSel <- df_gc2 %>%
+                filter(growthCenter %in% unallocatedCounties)
     
-    ret        <- allocateHousing(df_taz3c, df_gc2, excludeDRI, includeDev)
+    print("Re-allocating 'Unmet' Housing towards 'redevelopment'...") 
+    df_taz3c    <- prepareLCVariables(df_unmet, ctl, includeDev)
     
-    df_taz5    <- ret$df_taz4 %>%
-                  mutate(HHTotal = pmax(0, HHAllocated1 + HHAllocated + housing))
-    
-    hhConverge2 <- ret$DRIHHbyGrowthCenter
-} 
+    ret         <- allocateHousing(df_taz3c, df_gcSel, excludeDRI, includeDev)
+    df_taz4HH   <- ret$df_taz4
+    hhConverge2 <- ret$DRIHHbyGrowthCenter%>%
+                   select(growthCenter, Control_HH, HH_model, unMet_HH = diff, HH_Flag = converge)
 
-# Allocated unmet EMP towards redevelopment
-if(reRun_EMP_for_UnMetCounties){
-  
-    excludeDRI <- TRUE  # excludes DRI from CountyGrowth Target
-    includeDev <- TRUE  # adds existing developed land towards redevelopment
-    
     print("Re-allocating 'Unmet' Employment towards redevelopment...")
-    df_taz3     <- prepareLCVariables(dt_taz2, ctl, includeDev)
+    ret           <- allocateEmployment(df_taz4HH, df_gcSel, excludeDRI, includeDev)
+    df_taz4EMP    <- ret$df_taz4
+    empConverge2  <- ret$DRIEMPbyGrowthCenter%>%
+                     select(growthCenter, Control_EMP, EMP_model, unMet_EMP = diff, EMP_Flag = converge)
     
-    ret         <- allocateEmployment(df_taz5, df_gc, excludeDRI, includeDev)
-    df_taz5     <- ret$df_taz4
-    empConverge2  <- ret$DRIEMPbyGrowthCenter
-}
-
-# Merge two versions together
-if(reRun_HH_for_UnMetCounties | reRun_EMP_for_UnMetCounties){  
-  
-  # Append EMP fields from before
-  empAllocatedFields <- colnames(df_taz4)
-  hhAllocatedFields <- colnames(df_taz5)
-  
-  addFields <- empAllocatedFields[!(empAllocatedFields %in% hhAllocatedFields)]
-  df_taz4b <- df_taz4 %>% select(TAZ, addFields)
-  
-  df_taz5 <- df_taz5 %>%
-            left_join(df_taz4b, by = "TAZ")
-  
-  # Compute final land categories ()
-  df_taz3d <- df_taz3b %>% 
-              select(TAZ, empSpentLand, hhSpentLand, 
-                     resAvailableAcres0,  nonresAvailableAcres0,
-                     resAvailableAcres_net, nonresAvailableAcres_net,
-                     resAvailableAcres1, nonresAvailableAcres1, extraAgriLand)
     
-  df_taz5a <- df_taz5 %>%
-              left_join(df_taz3d, by = "TAZ")
-  
-  df_taz5b <- computeNewAvailableLand(df_taz5a, Agri_res_noRes_Flag)
-
+    # Check total housing and employment here
+    check_reallocation <- df_taz4EMP %>%
+                  group_by(growthCenter) %>%
+                  summarise_at(vars(housing0, employment0, 
+                                    HHAllocated1, HHAllocated, HHTotal,
+                                    EmpAllocated1, EmpAllocated, EmpTotal), sum)
+    
+    df_taz5  <- df_taz4EMP %>%
+                  mutate(HHAllocated2 = HHAllocated,
+                         EmpAllocated2 = EmpAllocated,
+                         HHAllocated = HHAllocated1 + HHAllocated2,
+                         EmpAllocated = EmpAllocated1 + EmpAllocated2,                          
+                         housing = housing0,
+                         employment = employment0,
+                         HHTotal = pmax(0, HHAllocated + housing),
+                         EmpTotal = pmax(0, EmpAllocated + employment)
+                         ) %>% 
+                 select(-housing0, -employment0)
+    
+    # Merge First allocation and Re-allocated data sets
+    # colnames(df_taz5)[!(colnames(df_taz5)%in% colnames(df_met))]
+    df_met <- df_taz4 %>% 
+              filter(!(growthCenter %in% unallocatedCounties)) %>%
+              mutate(HHAllocated1 = HHAllocated,
+                     EmpAllocated1 = EmpAllocated,
+                     HHAllocated2 = 0,
+                     EmpAllocated2 = 0)
+    
+    df_taz5a <- bind_rows(df_met, df_taz5) %>%
+                arrange(TAZ)
+    
 } else {
-      df_taz5b <- df_taz3b
+      df_taz5a <- df_taz3b
       hhConverge2 <- "Total HH Demand is met in hhConverge and so no reallocation is needed"
       empConverge2 <- "Total EMP Demand is met in empConverge and so no reallocation is needed"
 }
+
+#-------------------------------------------------------------------------------
+# Compute land availability 
+#-------------------------------------------------------------------------------
+# Recalculate land consumed by allocated development
+source("source_code_new/8_Reallocate_Unconsumed_EMPLand.R")
+df_taz5b <- computeNewAvailableLand(df_taz5a)
 
 #-------------------------------------------------------------------------------
 # FRATAR
