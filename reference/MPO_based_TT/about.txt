@@ -1,0 +1,11 @@
+Set_A_Summary are the HH, EMP allocated by FLUAM for BEBR.
+
+TAZ level interploation is Set_B and it consists of two replacements
+1. Central Florida shall be replaced with MPO projections (used for I-4)
+2. Set_A is used where there is no MPO data.
+
+Process:
+Trip rates same as FLUAM shall be used to develop growth factors
+
+
+ 
