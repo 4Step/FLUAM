@@ -123,6 +123,29 @@ allocateEmployment <- function(df_taz4, df_gc, excludeDRI, includeDev) {
     }
     
   }
+  
+  # Write iterim consumption files
+  if(debug) {
+    if(includeDev){
+        debug_emp_lc_file <- paste0("Output/Debug_",next_year,"_EMP_ReDev_Land_Consupution.xlsx")
+        debug_emp_file    <- paste0("Output/Debug_",next_year,"_EMP_ReDev_Allocated.xlsx")
+    } else{
+        debug_emp_lc_file <- paste0("Output/Debug_",next_year,"_EMP_Land_Consupution.xlsx")
+        debug_emp_file    <- paste0("Output/Debug_",next_year,"_EMP_Allocated.xlsx")
+    }
+
+    
+    names(iter_lcEMP) <- paste0("Iter-", c(1:length(iter_lcEMP)))
+    df_iter_lcEMP    <- data.frame(TAZ = df_temp$TAZ, iter_lcEMP)
+    
+    names(iter_EMP) <- paste0("Iter-", c(1:length(iter_EMP)))
+    df_iter_EMP       <- data.frame(TAZ = df_temp$TAZ, iter_EMP)
+    
+    write.xlsx(df_iter_lcEMP, debug_emp_lc_file) 
+    write.xlsx(df_iter_EMP, debug_emp_file) 
+  }
+  
+  
   ret <- list(df_taz4 = df_taz4, DRIEMPbyGrowthCenter = DRIEMPbyGrowthCenter)
   return(ret)
 }

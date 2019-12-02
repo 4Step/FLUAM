@@ -37,7 +37,6 @@ allocateHousing <- function(df_taz3, df_gc, excludeDRI, includeDev){
                         resVac3    = resAvailableAcres)
     }
     #---------------------------------------------------------------------------
-    
     # Compute raw HH allocation
     df_temp <- df_temp %>%
                 mutate(
@@ -53,7 +52,7 @@ allocateHousing <- function(df_taz3, df_gc, excludeDRI, includeDev){
                 )
     # Iteration 
     iter_lcHH[[iter]]   <- df_temp$landConsuptionHH
-    iter_HH[[iter]]   <- df_temp$HHAllocated
+    iter_HH[[iter]]     <- df_temp$HHAllocated
     
     # df_temp %>% filter(growthCenter == 20) %>% head()
     
@@ -116,6 +115,7 @@ allocateHousing <- function(df_taz3, df_gc, excludeDRI, includeDev){
       
       break
     } else{
+      
       # only add iteration data
       df_temp <- df_temp %>%
         select(TAZ, landConsuptionHH)
@@ -128,6 +128,26 @@ allocateHousing <- function(df_taz3, df_gc, excludeDRI, includeDev){
     }
     
   } 
+  
+  # Write iterim consumption files
+  if(debug) {
+    if(includeDev){
+        debug_hh_lc_file <- paste0("Output/Debug_",next_year,"_HH_RevDev_Land_Consupution.xlsx")
+        debug_hh_file    <- paste0("Output/Debug_",next_year,"_HH_RevDev_Allocated.xlsx")
+    } else{
+        debug_hh_lc_file <- paste0("Output/Debug_",next_year,"_HH_Land_Consupution.xlsx")
+        debug_hh_file    <- paste0("Output/Debug_",next_year,"_HH_Allocated.xlsx")
+    }
+    
+    names(iter_lcHH) <- paste0("Iter-", c(1:length(iter_lcHH)))
+    df_iter_lcHH     <- data.frame(TAZ = df_temp$TAZ, iter_lcHH)
+    
+    names(iter_HH) <- paste0("Iter-", c(1:length(iter_HH)))
+    df_iter_HH       <- data.frame(TAZ = df_temp$TAZ, iter_HH)
+    
+    write.xlsx(df_iter_lcHH, debug_hh_lc_file) 
+    write.xlsx(df_iter_HH, debug_hh_file) 
+  }
   
   reta <- list(df_taz4 = df_taz4, DRIHHbyGrowthCenter = DRIHHbyGrowthCenter)
   return(reta)

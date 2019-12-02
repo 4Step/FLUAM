@@ -38,7 +38,6 @@ df_taz2 <- df_taz %>%
            select(-`0`) %>%
            replace(is.na(.),0)
 
-
 # Compute growth factors
 df_taz2 <- df_taz2 %>%
            mutate(g2020 = ifelse( `2015` > 0 , `2020` / `2015`, 1),
