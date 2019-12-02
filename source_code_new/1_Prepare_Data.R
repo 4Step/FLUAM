@@ -36,11 +36,19 @@ getDensityDecile <- function(df_ctl){
 
 # function to get FRATAR constants by Area Type
 getFratarConst <- function(df_ctl){
+  
+  fratHHFact <- df_ctl %>% 
+               filter(Type == 'fratHHFact') %>%
+               mutate(Value = as.numeric(Value)) %>%
+               pull(Value)
+  
   fratEMPFact <- df_ctl %>% 
                filter(Type == 'fratEmpFact') %>%
                mutate(Value = as.numeric(Value)) %>%
                pull(Value)
-  return(fratEMPFact)
+  
+  reta <- list(fratEMPFact = fratEMPFact, fratHHFact = fratHHFact)
+  return(reta)
 }
 
 #-------------------------------------------------------------------------------
@@ -71,8 +79,6 @@ loadSEData <- function(taz_pd_file, year){
   } else{
     df_taz <- df_pd
   }
-  
-  
   
   return(df_taz)
 }

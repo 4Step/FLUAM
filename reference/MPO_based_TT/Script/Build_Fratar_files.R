@@ -16,13 +16,17 @@ fratEMPFact <- df_ctl %>%
              mutate(Value = as.numeric(Value)) %>%
              pull(Value)
 
+fratHHFact <- df_ctl %>% 
+               filter(Type == 'fratHHFact') %>%
+               mutate(Value = as.numeric(Value)) %>%
+               pull(Value)
 #------------------------------------------------------------------------------- 
 # Compute Trips 
 df_taz <- df_b2 %>%
 mutate(boolUrbanArea = ifelse(areaType == 2, 1, 0),
        Trips =	as.numeric(ctl$fratConstant) + 
          fratEMPFact[areaType] * EMP  +
-         as.numeric(ctl$fratHHFact) * HH  + 
+         fratHHFact[areaType] * HH  + 
          as.numeric(ctl$fratUrbanArea)* boolUrbanArea
 )
 

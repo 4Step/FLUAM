@@ -6,15 +6,14 @@
 # Allocate or Deallocate
 #-------------------------------------------------------------------------------
 # Know the direction to increment or decrement
-runType   <- RunDir[i]
+runType      <- sub_runs[i]
+curr_year    <- sub_Years[i-1]
+next_year    <- sub_Years[i]
+
 if(runType == 1){
-    curr_year    <- Years[i-1]
-    next_year    <- Years[i]
-    growth_year  <- Years[i]
+    growth_year  <- sub_Years[i]
 } else{
-    curr_year    <- Years[i+1]
-    next_year    <- Years[i]
-    growth_year  <- Years[i+1]
+    growth_year  <- sub_Years[i-1]
 }
 
 #-------------------------------------------------------------------------------
@@ -33,8 +32,11 @@ source("source_code_new/1_Prepare_Data.R")
 resDecile    <- getResDecile(df_ctl)
 nonResDecile <- getNonResDecile(df_ctl)
 resDenDecile <- getDensityDecile(df_ctl)
-fratEMPFact  <- getFratarConst(df_ctl)
-  
+fratarConstant  <- getFratarConst(df_ctl)
+
+fratEMPFact  <- fratarConstant$fratEMPFact
+fratHHFact  <- fratarConstant$fratHHFact
+
 # Load SE data
 df_taz  <- loadSEData(taz_pd_file, curr_year)
 max_taz <- max(df_taz$TAZ)
