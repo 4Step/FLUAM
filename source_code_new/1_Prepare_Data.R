@@ -137,7 +137,7 @@ loadNodes <- function(year){
 getGrowthTarget <- function(gc_file, useMPO_Controls, growth_year){
   # Switch between MPO and BEBR data
   if(useMPO_Controls){ 
-    sheetName <- "MPO_Increment"
+    sheetName <- "MPO_Increments"
   } else {
     sheetName <- "BEBR_Increments"
   }

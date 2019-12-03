@@ -1,7 +1,8 @@
 #-------------------------------------------------------------------------------
 # CalculateNewHousing
+# runType (1 = allocate or -1 = deallocate)
 #-------------------------------------------------------------------------------
-allocateHousing <- function(df_taz3, df_gc, excludeDRI, includeDev){
+allocateHousing <- function(df_taz3, df_gc, excludeDRI, includeDev, runType){
   # Append density constraints
 
   # keep track of landConsuptions
@@ -29,7 +30,7 @@ allocateHousing <- function(df_taz3, df_gc, excludeDRI, includeDev){
                                              0),
                          resVac3    = resAvailableAcres + resDeveloped)
     } else {
-      df_temp <- df_taz3 %>% 
+        df_temp <- df_taz3 %>% 
                  # Excludes "redevelopment"
                  mutate(resDensity = ifelse(resDeveloped > 0, 
                                             housing / resDeveloped, 
@@ -47,8 +48,10 @@ allocateHousing <- function(df_taz3, df_gc, excludeDRI, includeDev){
                        rsgRd2     = ifelse(housingDensityConstraint != 1 & rsgRd2 > housingDensityConstraint,
                                            housingDensityConstraint, 
                                            rsgRd2),
+                       landConsuptionHH = ifelse(runType < 0 & housing == 0, 0, landConsuptionHH),
                        HHAllocated = resVac3 * rsgRd2 * landConsuptionHH,
-                       HHAllocated = ifelse(DRI_Housing > 0, 0, HHAllocated)
+                       HHAllocated = ifelse(DRI_Housing > 0, 0, HHAllocated),
+                       HHAllocated = ifelse(runType < 0 & HHAllocated  > housing, 0, HHAllocated)
                 )
     # Iteration 
     iter_lcHH[[iter]]   <- df_temp$landConsuptionHH
@@ -62,10 +65,7 @@ allocateHousing <- function(df_taz3, df_gc, excludeDRI, includeDev){
       summarise(DRIHHbyGrowthCenter = sum(DRI_Housing),
                 HHbyGrowthCenter = sum(HHAllocated)) %>%
       left_join(df_gc, by = "growthCenter") %>%
-      mutate(
-             # ScaleFactorForGrowthCenter = ifelse(HHbyGrowthCenter > 0 , 
-             #                                      (Control_HH - DRIHHbyGrowthCenter) / HHbyGrowthCenter, 0)
-             ScaleFactorForGrowthCenter = case_when(
+      mutate(ScaleFactorForGrowthCenter = case_when(
                  HHbyGrowthCenter > 0 & !excludeDRI ~ ((Control_HH - DRIHHbyGrowthCenter) / HHbyGrowthCenter),
                  HHbyGrowthCenter > 0 & excludeDRI ~ (Control_HH  / HHbyGrowthCenter),
                  TRUE ~ 0)
@@ -76,13 +76,15 @@ allocateHousing <- function(df_taz3, df_gc, excludeDRI, includeDev){
     df_temp <- df_temp %>% 
       left_join(DRIHHbyGrowthCenter, by = "growthCenter") %>%
       mutate(resFactoredCons = pmin(1, landConsuptionHH * ScaleFactorForGrowthCenter),
-             landConsuptionHH = resFactoredCons,          # Key to support iteration
+             # Key to support iteration
+             landConsuptionHH = resFactoredCons,          
              resFactoredDensity = rsgRd2,
              HHAllocated = ifelse(Control_HH > 0, 
                                   resVac3 * resFactoredCons * resFactoredDensity,
                                   0),
              HHAllocated = ifelse(DRI_Housing > 0 , 0, HHAllocated),
-             HHTotal = housing + HHAllocated + DRI_Housing
+             HHAllocated = ifelse(runType < 0 & HHAllocated  > housing, 0, HHAllocated),
+             HHTotal = housing + runType * (HHAllocated + DRI_Housing)
       ) %>%
       select(-ScaleFactorForGrowthCenter, -Control_HH)                
     
@@ -94,7 +96,7 @@ allocateHousing <- function(df_taz3, df_gc, excludeDRI, includeDev){
                                   sum(HHAllocated),
                                   sum(DRI_Housing + HHAllocated))) %>%
       left_join(df_gc, by = "growthCenter") %>%
-      mutate(diff = abs(HH_model - Control_HH),
+      mutate(diff =  abs(Control_HH - HH_model),
              converge = ifelse(diff > 100, -100, 1))
     
     converge <- min(DRIHHbyGrowthCenter$converge) == 1 
@@ -109,7 +111,7 @@ allocateHousing <- function(df_taz3, df_gc, excludeDRI, includeDev){
       df_temp <- df_temp %>% 
         select(newfields)
       
-      df_taz4 <- df_taz3 %>%
+      df_taz3 <- df_taz3 %>%
         select(-landConsuptionHH) %>%
         left_join(df_temp, by = "TAZ")
       
@@ -121,7 +123,7 @@ allocateHousing <- function(df_taz3, df_gc, excludeDRI, includeDev){
         select(TAZ, landConsuptionHH)
       
       # remove last iteration landuse
-      df_taz4 <- df_taz3 %>%
+      df_taz3 <- df_taz3 %>%
         select(-landConsuptionHH) %>%
         left_join(df_temp, by = "TAZ")
       
@@ -149,7 +151,7 @@ allocateHousing <- function(df_taz3, df_gc, excludeDRI, includeDev){
     write.xlsx(df_iter_HH, debug_hh_file) 
   }
   
-  reta <- list(df_taz4 = df_taz4, DRIHHbyGrowthCenter = DRIHHbyGrowthCenter)
+  reta <- list(df_taz4 = df_taz3, DRIHHbyGrowthCenter = DRIHHbyGrowthCenter)
   return(reta)
 }
 

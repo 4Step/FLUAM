@@ -2,7 +2,7 @@
 # CalculateNewEmployment
 #-------------------------------------------------------------------------------
 
-allocateEmployment <- function(df_taz4, df_gc, excludeDRI, includeDev) {
+allocateEmployment <- function(df_taz4, df_gc, excludeDRI, includeDev, runType) {
   
   # keep track of landConsuptions
   iter_lcEMP <-list()
@@ -44,6 +44,7 @@ allocateEmployment <- function(df_taz4, df_gc, excludeDRI, includeDev) {
                                            pmax(5, pmax(nonresDensity, rsg_rd))),
                        density    = ifelse(employmentDensityConstraint != 1000 & density > employmentDensityConstraint,
                                            employmentDensityConstraint, density),
+                       landConsuptionEmp = ifelse(runType < 0 & employment == 0, 0, landConsuptionEmp),
                        EmpAllocated = landConsuptionEmp * density * empVacLand,
                        EmpAllocated = ifelse(DRI_Employment > 0, 0, EmpAllocated)
                 )
@@ -74,11 +75,13 @@ allocateEmployment <- function(df_taz4, df_gc, excludeDRI, includeDev) {
       left_join(DRIEMPbyGrowthCenter, by = "growthCenter") %>%
       select(-Control_EMP) %>%
       mutate(nonresFactoredCons = pmin(1, landConsuptionEmp * ScaleFactorForGrowthCenter),
-             landConsuptionEmp = nonresFactoredCons,          # Key to support iteration
+             # Key to support iteration
+             landConsuptionEmp = nonresFactoredCons,          
              nonresFactoredDensity = density,
              EmpAllocated = empVacLand * nonresFactoredCons * nonresFactoredDensity,
              EmpAllocated = ifelse(DRI_Employment > 0, 0, EmpAllocated),
-             EmpTotal = employment + EmpAllocated + DRI_Employment
+             EmpAllocated = ifelse(runType < 0 & EmpAllocated  > employment, 0, EmpAllocated),
+             EmpTotal = employment + runType * (EmpAllocated + DRI_Employment)
       ) %>%
       select(-ScaleFactorForGrowthCenter)                     # remove it from 
     
@@ -86,12 +89,11 @@ allocateEmployment <- function(df_taz4, df_gc, excludeDRI, includeDev) {
     DRIEMPbyGrowthCenter <- df_temp %>%
       select(growthCenter, DRI_Employment, EmpAllocated) %>%
       group_by(growthCenter) %>%
-      # summarise(EMP_model = sum(DRI_Employment + EmpAllocated)) %>%
       summarise(EMP_model = ifelse(excludeDRI, 
                                   sum(EmpAllocated),
                                   sum(DRI_Employment + EmpAllocated))) %>%
       left_join(df_gc, by = "growthCenter") %>%
-      mutate(diff = abs(EMP_model - Control_EMP),
+      mutate(diff = abs(Control_EMP - EMP_model),
              converge = ifelse(diff > 100, -100, 1))
     
     converge <- min(DRIEMPbyGrowthCenter$converge) == 1 

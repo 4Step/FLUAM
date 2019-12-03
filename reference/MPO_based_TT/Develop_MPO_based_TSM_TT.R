@@ -62,15 +62,15 @@
 # Run program
 #------------------------------------------------------------------------------- 
   # Compile CFRPM data
-  source("scripts/compile_CFRPM_Interim_Years_to_TSM.R")
+  source("script/compile_CFRPM_Interim_Years_to_TSM.R")
   
   # Interpolate between the regional model years
-  source("scripts/Interpolate.R")
+  source("script/Interpolate.R")
   
   # Consolidate regional model, CFRPM, FLUAM, DRI, External data towards FRATAR Inputs
-  source("scripts/Build_Fratar_files.R")
+  source("script/Build_Fratar_files.R")
   
   # Develop County level growth factors
-  source("scripts/develop_county_growth.R")
+  source("script/develop_county_growth.R")
   
 #------------------------------------------------------------------------------- 

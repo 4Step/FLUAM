@@ -13,16 +13,14 @@ library(openxlsx)
 library(Rcpp)
 library(stringr)
 
-# start_time <- Sys.time()
-
 # Input files
 path       <- "M:/Models/StateWide/TSM_Legacy/FLUAM"
-Years      <- c(2015, 2020, 2025, 2030, 2035, 2040, 2045, 2050)
-RunDir     <- c(0,       1,    1,    1,    1,    1,    1,    1)
 
-useMPO_Controls <- FALSE
-# If we are using MPO controls then use the below setting
-# RunDir     <- c(0,     1,    1,    -1,    -1,    0,    1,    1)
+Years      <- c(2015, 2020, 2025, 2030, 2035, 2040, 2045, 2050)
+runFLUAM   <- c(0,       1,    1,    1,    1,    1,    1,    1)
+runMPO     <- c(0,      -1,   -1,   -1,   -1,    0,    1,    1) 
+
+useMPO_Controls <- TRUE
 
 # DRI specification
 # 0 = provided are DRI totals 
@@ -56,14 +54,15 @@ max_iter <- 20
 debug    <- FALSE
 
 
-start_time <- Sys.time()
 
 #-------------------------------------------------------------------------------
 # Run FLUAM for each year
+start_time <- Sys.time()
 
 if(!useMPO_Controls){
   
   # use "sub" variables to support MPO_Control Settings
+  RunDir       <- runFLUAM
   sub_runs     <- RunDir
   sub_Years    <- Years
     
@@ -80,8 +79,10 @@ if(!useMPO_Controls){
 # For MPO data 
 if(useMPO_Controls){
   
- Years      <- c(2020, 2025, 2030, 2035, 2040, 2045, 2050)
- RunDir     <- c(  -1,   -1,   -1,   -1,    0,    1,    1) 
+ # Years      <- c(2020, 2025, 2030, 2035, 2040, 2045, 2050)
+ # RunDir     <- c(  -1,   -1,   -1,   -1,    0,    1,    1) 
+ Years      <- Years[2:length(Years)]
+ RunDir     <- runMPO[2:length(runMPO)]
  
  # Use DRI from Increment tab (it's unwanted complexity to change sign and compute deltas)
  global_Flag <- 1
@@ -101,17 +102,17 @@ if(useMPO_Controls){
  nest_years <- list(sub_years1, sub_years2)
  nest_runs  <- list(sub_run1, sub_run2)
  
- # for(n in 1:length(nest_years)){
- for(n in 1:1){
+ for(n in 1:length(nest_years)){
+ # for(n in 2:2){
    sub_Years <- nest_years[[n]]
    sub_runs  <- nest_runs[[n]]
 
-     # for(i in 2:length(sub_Years)){
-    for(i in 2:2){
+     for(i in 2:length(sub_Years)){
+    # for(i in 2:2){
       print("*******************************************************")
       print(paste("Computing FLUAM :", sub_Years[i]))
       
-      # Use MPO model TAZ data as base
+      # Use MPO model 2040 TAZ data as starting point
       if(sub_Years[i-1] == 2040){
          source_taz_file <- read.xlsx(mpo_base_file, sheet = "base_data")
          target_file     <- paste0("Output/2040_FLUAM_Output.xlsx")
@@ -130,20 +131,6 @@ if(useMPO_Controls){
 end_time <- Sys.time()
 end_time - start_time
 
-
-# xyz <- data.frame(Years = Years, RunDir = RunDir)
-
-# (breakdown by anchor RunDir == 0)
-# pos <- which(RunDir == 0)
-# anchors <- Years[which(RunDir == 0)]
-# 
-# n_loops   <- length(pos) + 1
-# run_array <- list()
-# 
-# for(p in 1:n_loops){
-#   run_array[p] <- Years[1:pos[p]]
-#   # years_2 <- Years[p:length(pos)]
-# }
 
 #-------------------------------------------------------------------------------
 

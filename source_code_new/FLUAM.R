@@ -126,7 +126,11 @@ dt_taz2     <- getRampDistance(dt_taz2, zone_nodes, other_nodes)
 #-------------------------------------------------------------------------------
 print("Computing Agri.Land Conversion...")
 source("source_code_new/3B_AgricultureLandConversion.R")
-dt_taz2 <- convertAgriculture(dt_taz2, next_year, curr_year, rate, Agri_res_noRes_Flag)
+
+# Don't run for deallocation (assume the 2040 base density / land is )
+if(runType > 0){
+  dt_taz2 <- convertAgriculture(dt_taz2, next_year, curr_year, rate, Agri_res_noRes_Flag)
+}
 
 print("Computing Land Conumption...")  
 source("source_code_new/4_LandConspution_Variables.R")
@@ -136,20 +140,20 @@ df_taz3 <- prepareLCVariables(dt_taz2, ctl, includeDev)
 #-------------------------------------------------------------------------------
 # Allocate HH & EMP 
 #-------------------------------------------------------------------------------
-print("Allocating Housing...")
-
 source("source_code_new/5_HousingAllocation.R")
-excludeDRI <- FALSE  # excludes DRI from CountyGrowth Target
 
+# excludes DRI from CountyGrowth Target
+excludeDRI <- FALSE  
 
-ret        <- allocateHousing(df_taz3, df_gc, excludeDRI, includeDev)
+print("Allocating Housing...")
+ret        <- allocateHousing(df_taz3, df_gc, excludeDRI, includeDev, runType)
 df_taz4    <- ret$df_taz4
 hhConverge <- ret$DRIHHbyGrowthCenter %>%
               select(growthCenter, Control_HH, HH_model, unMet_HH = diff, HH_Flag = converge)
 
 print("Allocating Employment...")
 source("source_code_new/6_EmploymentAllocation.R")
-ret         <- allocateEmployment(df_taz4, df_gc, excludeDRI, includeDev)
+ret         <- allocateEmployment(df_taz4, df_gc, excludeDRI, includeDev, runType)
 df_taz4     <- ret$df_taz4
 empConverge <- ret$DRIEMPbyGrowthCenter %>%
                select(growthCenter, Control_EMP, EMP_model, unMet_EMP = diff, EMP_Flag = converge)
@@ -160,15 +164,16 @@ empConverge <- ret$DRIEMPbyGrowthCenter %>%
 # Get "unallocated" units as "new" targets
 df_gc2 <- hhConverge %>% 
           left_join(empConverge, by = "growthCenter") %>%
-          mutate(Control_HH = ifelse(unMet_HH > 100, unMet_HH, 0),
-                 Control_EMP = ifelse(unMet_EMP > 100, unMet_EMP, 0)) %>%
+          mutate(Control_HH = ifelse(abs(unMet_HH) > 100, unMet_HH, 0),
+                 Control_EMP = ifelse(abs(unMet_EMP) > 100, unMet_EMP, 0)) %>%
           select(growthCenter, Control_HH, Control_EMP)
         
 # Counties with "unmet" demand
 # unallocatedCounties <- df_gc2 %>% filter(Control_HH > 0) %>% pull(growthCenter)
 unmet_HH_Counties   <- df_gc2 %>% filter(Control_HH > 0) %>% pull(growthCenter)
 unmet_EMP_Counties  <- df_gc2 %>% filter(Control_EMP > 0) %>% pull(growthCenter)
-unallocatedCounties <- unique(unmet_HH_Counties, unmet_EMP_Counties)
+
+unallocatedCounties <- unique(c(unmet_HH_Counties, unmet_EMP_Counties))
 
 # Choose whether to re-run or not
 if(length(unmet_HH_Counties) > 0 ) {
@@ -239,13 +244,13 @@ if(reRun_HH_for_UnMetCounties || reRun_EMP_for_UnMetCounties) {
     print("Re-allocating 'Unmet' Housing towards 'redevelopment'...") 
     df_taz3c    <- prepareLCVariables(df_unmet, ctl, includeDev)
     
-    ret         <- allocateHousing(df_taz3c, df_gcSel, excludeDRI, includeDev)
+    ret         <- allocateHousing(df_taz3c, df_gcSel, excludeDRI, includeDev, runType)
     df_taz4HH   <- ret$df_taz4
     hhConverge2 <- ret$DRIHHbyGrowthCenter%>%
                    select(growthCenter, Control_HH, HH_model, unMet_HH = diff, HH_Flag = converge)
 
     print("Re-allocating 'Unmet' Employment towards redevelopment...")
-    ret           <- allocateEmployment(df_taz4HH, df_gcSel, excludeDRI, includeDev)
+    ret           <- allocateEmployment(df_taz4HH, df_gcSel, excludeDRI, includeDev, runType)
     df_taz4EMP    <- ret$df_taz4
     empConverge2  <- ret$DRIEMPbyGrowthCenter%>%
                      select(growthCenter, Control_EMP, EMP_model, unMet_EMP = diff, EMP_Flag = converge)
@@ -265,8 +270,13 @@ if(reRun_HH_for_UnMetCounties || reRun_EMP_for_UnMetCounties) {
                          EmpAllocated = EmpAllocated1 + EmpAllocated2,                          
                          housing = housing0,
                          employment = employment0,
-                         HHTotal = pmax(0, HHAllocated + housing),
-                         EmpTotal = pmax(0, EmpAllocated + employment)
+                         HHTotal = case_when(runType > 0 ~ pmax(0, HHAllocated + housing),
+                                             runType < 0 ~ pmax(0, housing - HHAllocated),
+                                             TRUE ~ 0),
+                         # EmpTotal = pmax(0, EmpAllocated + employment),
+                         EmpTotal = case_when(runType > 0 ~ pmax(0, EmpAllocated + employment),
+                                              runType < 0 ~ pmax(0, employment - EmpAllocated),
+                                              TRUE ~ 0)
                          ) %>% 
                  select(-housing0, -employment0)
     
@@ -293,8 +303,14 @@ if(reRun_HH_for_UnMetCounties || reRun_EMP_for_UnMetCounties) {
 #-------------------------------------------------------------------------------
 # Recalculate land consumed by allocated development
 source("source_code_new/8_Reallocate_Unconsumed_EMPLand.R")
-df_taz5b <- computeNewAvailableLand(df_taz5a)
 
+# Don't run for deallocation (assume the 2040 base density / land is )
+if(runType > 0){
+  df_taz5b <- computeNewAvailableLand(df_taz5a)
+} else{
+  df_taz5b <- df_taz5a
+}
+  
 #-------------------------------------------------------------------------------
 # FRATAR
 #-------------------------------------------------------------------------------
