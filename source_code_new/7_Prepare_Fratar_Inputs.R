@@ -2,7 +2,7 @@
 # FRATAR
 #-------------------------------------------------------------------------------
 # Function to FRATAR trips
-computeFRATAR <- function(df_taz4){
+computeFRATAR <- function(df_taz4, runType){
   df_taz5 <- df_taz4 %>%
     mutate(boolUrbanArea = ifelse(areaType == 2, 1, 0),
            baseTrips =	as.numeric(ctl$fratConstant) + 
@@ -15,6 +15,12 @@ computeFRATAR <- function(df_taz4){
              as.numeric(ctl$fratUrbanArea)* boolUrbanArea,
            growth = futureTrips / baseTrips
     )
+  
+  # For MPO model
+  if(runType < 0){
+     df_taz5 <-  df_taz5 %>%
+                 mutate(growth =  baseTrips / futureTrips)
+  }
   
   return(df_taz5)
 }

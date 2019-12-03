@@ -316,10 +316,13 @@ if(runType > 0){
 #-------------------------------------------------------------------------------
 print("Computing Trips / Fratar Inputs...")
 source("source_code_new/7_Prepare_Fratar_Inputs.R")
-df_taz6 <- computeFRATAR(df_taz5b)
+df_taz6 <- computeFRATAR(df_taz5b, runType)
 
 print("Writing Outputs...")
-fratar_file <- paste0("Output/",next_year,"_FratarInput.txt")  
+fratar_file <- ifelse(runType ==1, 
+                       paste0("Output/",next_year,"_FratarInput.txt") ,
+                       paste0("Output/",curr_year,"_FratarInput.txt"))
+
 writeFRATARInput(df_taz6, fratar_file, ext_Stn_file, next_year)
 
 df_taz7 <- df_taz6 %>%

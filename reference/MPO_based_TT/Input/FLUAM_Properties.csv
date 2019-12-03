@@ -1,59 +1,61 @@
-"Type","Key","Value","Description"
-"CTL","ctl.7",-1.7354,"TravelTimeAdjustment"
-"FRATAR","fratConstant",1147.784,"Constant"
-"fratEmpFact","fratEmpFact.1",3.61,"RUREMP (Area Type 1)"
-"fratEmpFact","fratEmpFact.2",3.024,"URBEMP (Area Type 2)"
-"fratEmpFact","fratEmpFact.3",3.952,"TRANEMP (Area Type 3)"
-"FRATAR","fratHHFact",1.884,"WGHT_HH"
-"FRATAR","fratUrbanArea",1611.567,"Urban area"
-"ResLandConsume","resConstantCoef",-0.7,"constant"
-"ResLandConsume","resGrowBoundaryCoef",4,"if inside the urban growth boundry"
-"ResLandConsume","resDistToCoast",-0.002723,"distance to coast (dis_coast)"
-"ResLandConsume","resAccessChangeCoef",2.4,"change in accessibility (pache)"
-"ResLandConsume","resNonResUseCoef",-0.2,"non residentail use (nr_cnt_per)"
-"ResLandConsume","resCoastalTAZCoef",0.18,"coastal TAZ (coastal)"
-"ResLandConsume","resNonResCoastalCoef",-0.75,"non residential use for coastal TAZs (_InrXco)"
-"ResLandConsume","resDevelopmentCoef",1.23,"development (dev_pct)"
-"ResLandConsume","resSmallVacantCoef",-0.77,"less than 1 acre of vacant (Iland_1)"
-"ResLandConsume","resLargeVacantCoef",-0.97,"more than 1000 acres of vacant (Iland_2)"
-"resAccessCoef","resAccessCoef.1",0,"Decile 1: accessibility category (Ilache_ca~1)"
-"resAccessCoef","resAccessCoef.2",0.02,"Decile 2: accessibility category (Ilache_ca~2)"
-"resAccessCoef","resAccessCoef.3",0.7,"Decile 3: accessibility category (Ilache_ca~3)"
-"resAccessCoef","resAccessCoef.4",0.65,"Decile 4: accessibility category (Ilache_ca~4)"
-"resAccessCoef","resAccessCoef.5",0.88,"Decile 5: accessibility category (Ilache_ca~5)"
-"resAccessCoef","resAccessCoef.6",1.03,"Decile 6: accessibility category (Ilache_ca~6)"
-"resAccessCoef","resAccessCoef.7",1.06,"Decile 7: accessibility category (Ilache_ca~7)"
-"resAccessCoef","resAccessCoef.8",1.1,"Decile 8: accessibility category (Ilache_ca~8)"
-"resAccessCoef","resAccessCoef.9",1.1,"Decile 9: accessibility category (Ilache_ca~9)"
-"resAccessCoef","resAccessCoef.10",1.1,"Decile 10: accessibility category (Ilache_ca~10)"
-"NonResLandConsume","nonresConstantCoef",-1.88,"constant"
-"NonResLandConsume","nonresGrowBoundaryCoef",0.55,"inside growth boundry"
-"NonResLandConsume","nonresDistToRampCoef",-0.24,"distance to ramp"
-"NonResLandConsume","nonresAccessChangeCoef",-1.77,"change in accessibility"
-"nonRAccessCoef","nonRAccessCoef.1",0,"Decile 1: accessibility category"
-"nonRAccessCoef","nonRAccessCoef.2",0.21,"Decile 2: accessibility category"
-"nonRAccessCoef","nonRAccessCoef.3",0.27,"Decile 3: accessibility category"
-"nonRAccessCoef","nonRAccessCoef.4",0.32,"Decile 4: accessibility category"
-"nonRAccessCoef","nonRAccessCoef.5",0.38,"Decile 5: accessibility category"
-"nonRAccessCoef","nonRAccessCoef.6",0.45,"Decile 6: accessibility category"
-"nonRAccessCoef","nonRAccessCoef.7",0.56,"Decile 7: accessibility category"
-"nonRAccessCoef","nonRAccessCoef.8",0.65,"Decile 8: accessibility category"
-"nonRAccessCoef","nonRAccessCoef.9",0.96,"Decile 9: accessibility category"
-"nonRAccessCoef","nonRAccessCoef.10",1.07,"Decile 10: accessibility category"
-"ResDensity","d_resConstantCoef",0.15,"constant"
-"ResDensity","d_resDevelopmentDensCoef",0.46,"developed density"
-"ResDensity","d_resAccessChangeCoef",0.58,"change in accessibility"
-"ResDensity","d_resSmallVacantCoef",-1.2,"less than 1 acre of vacant"
-"ResDensity","d_resLargeVacantCoef",-0.3,"more than 1000 acres of vacant"
-"resDenCoef","resDenCoef.1",0,"Decile 1: accessibility category"
-"resDenCoef","resDenCoef.2",0.13,"Decile 2: accessibility category"
-"resDenCoef","resDenCoef.3",0.23,"Decile 3: accessibility category"
-"resDenCoef","resDenCoef.4",0.24,"Decile 4: accessibility category"
-"resDenCoef","resDenCoef.5",0.23,"Decile 5: accessibility category"
-"resDenCoef","resDenCoef.6",0.31,"Decile 6: accessibility category"
-"resDenCoef","resDenCoef.7",0.26,"Decile 7: accessibility category"
-"resDenCoef","resDenCoef.8",0.21,"Decile 8: accessibility category"
-"resDenCoef","resDenCoef.9",0.4,"Decile 9: accessibility category"
-"resDenCoef","resDenCoef.10",0.6,"Decile 10: accessibility category"
-"NonResDensity","d_nonresConstantCoef",-15.04,"constant"
-"NonResDensity","d_nonresAccessCoef",12.11,"accessibility"
+Type,Key,Value,Description
+CTL,ctl.7,-1.7354,TravelTimeAdjustment
+FRATAR,fratConstant,565.8855,Constant
+fratEmpFact,fratEmpFact.1,10.8091,RUREMP (Area Type 1)
+fratEmpFact,fratEmpFact.2,7.0701,URBEMP (Area Type 2)
+fratEmpFact,fratEmpFact.3,10.0485,TRANEMP (Area Type 3)
+fratHHFact,fratHHFact.1,4.2835,RURHH (Area Type 1)
+fratHHFact,fratHHFact.2,10.1492,URBHH (Area Type 2)
+fratHHFact,fratHHFact.3,6.4855,TRANHH (Area Type 3)
+FRATAR,fratUrbanArea,955.2684,Urban area
+ResLandConsume,resConstantCoef,-0.7,constant
+ResLandConsume,resGrowBoundaryCoef,4,if inside the urban growth boundry
+ResLandConsume,resDistToCoast,-0.002723,distance to coast (dis_coast)
+ResLandConsume,resAccessChangeCoef,2.4,change in accessibility (pache)
+ResLandConsume,resNonResUseCoef,-0.2,non residentail use (nr_cnt_per)
+ResLandConsume,resCoastalTAZCoef,0.18,coastal TAZ (coastal)
+ResLandConsume,resNonResCoastalCoef,-0.75,non residential use for coastal TAZs (_InrXco)
+ResLandConsume,resDevelopmentCoef,1.23,development (dev_pct)
+ResLandConsume,resSmallVacantCoef,-0.77,less than 1 acre of vacant (Iland_1)
+ResLandConsume,resLargeVacantCoef,-0.97,more than 1000 acres of vacant (Iland_2)
+resAccessCoef,resAccessCoef.1,0,Decile 1: accessibility category (Ilache_ca~1)
+resAccessCoef,resAccessCoef.2,0.02,Decile 2: accessibility category (Ilache_ca~2)
+resAccessCoef,resAccessCoef.3,0.7,Decile 3: accessibility category (Ilache_ca~3)
+resAccessCoef,resAccessCoef.4,0.65,Decile 4: accessibility category (Ilache_ca~4)
+resAccessCoef,resAccessCoef.5,0.88,Decile 5: accessibility category (Ilache_ca~5)
+resAccessCoef,resAccessCoef.6,1.03,Decile 6: accessibility category (Ilache_ca~6)
+resAccessCoef,resAccessCoef.7,1.06,Decile 7: accessibility category (Ilache_ca~7)
+resAccessCoef,resAccessCoef.8,1.1,Decile 8: accessibility category (Ilache_ca~8)
+resAccessCoef,resAccessCoef.9,1.1,Decile 9: accessibility category (Ilache_ca~9)
+resAccessCoef,resAccessCoef.10,1.1,Decile 10: accessibility category (Ilache_ca~10)
+NonResLandConsume,nonresConstantCoef,-1.88,constant
+NonResLandConsume,nonresGrowBoundaryCoef,0.55,inside growth boundry
+NonResLandConsume,nonresDistToRampCoef,-0.24,distance to ramp
+NonResLandConsume,nonresAccessChangeCoef,-1.77,change in accessibility
+nonRAccessCoef,nonRAccessCoef.1,0,Decile 1: accessibility category
+nonRAccessCoef,nonRAccessCoef.2,0.21,Decile 2: accessibility category
+nonRAccessCoef,nonRAccessCoef.3,0.27,Decile 3: accessibility category
+nonRAccessCoef,nonRAccessCoef.4,0.32,Decile 4: accessibility category
+nonRAccessCoef,nonRAccessCoef.5,0.38,Decile 5: accessibility category
+nonRAccessCoef,nonRAccessCoef.6,0.45,Decile 6: accessibility category
+nonRAccessCoef,nonRAccessCoef.7,0.56,Decile 7: accessibility category
+nonRAccessCoef,nonRAccessCoef.8,0.65,Decile 8: accessibility category
+nonRAccessCoef,nonRAccessCoef.9,0.96,Decile 9: accessibility category
+nonRAccessCoef,nonRAccessCoef.10,1.07,Decile 10: accessibility category
+ResDensity,d_resConstantCoef,0.15,constant
+ResDensity,d_resDevelopmentDensCoef,0.46,developed density
+ResDensity,d_resAccessChangeCoef,0.58,change in accessibility
+ResDensity,d_resSmallVacantCoef,-1.2,less than 1 acre of vacant
+ResDensity,d_resLargeVacantCoef,-0.3,more than 1000 acres of vacant
+resDenCoef,resDenCoef.1,0,Decile 1: accessibility category
+resDenCoef,resDenCoef.2,0.13,Decile 2: accessibility category
+resDenCoef,resDenCoef.3,0.23,Decile 3: accessibility category
+resDenCoef,resDenCoef.4,0.24,Decile 4: accessibility category
+resDenCoef,resDenCoef.5,0.23,Decile 5: accessibility category
+resDenCoef,resDenCoef.6,0.31,Decile 6: accessibility category
+resDenCoef,resDenCoef.7,0.26,Decile 7: accessibility category
+resDenCoef,resDenCoef.8,0.21,Decile 8: accessibility category
+resDenCoef,resDenCoef.9,0.4,Decile 9: accessibility category
+resDenCoef,resDenCoef.10,0.6,Decile 10: accessibility category
+NonResDensity,d_nonresConstantCoef,-15.04,constant
+NonResDensity,d_nonresAccessCoef,12.11,accessibility

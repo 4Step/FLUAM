@@ -82,8 +82,8 @@ for(y in 1:length(years)){
   df_fratar <- rbind(df_taz_y, df_ext_y)
     
   # Write FRATAR File
-  # write.table(df_fratar, fratar_file, sep = " ", quote = FALSE,
-  #             row.names = F, col.names = F)
+  write.table(df_fratar, fratar_file, sep = " ", quote = FALSE,
+              row.names = F, col.names = F)
   
   
   # Not required by for reference
