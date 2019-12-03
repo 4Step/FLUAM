@@ -53,8 +53,6 @@ max_iter <- 20
 # To write land consumption & HH, EMP by iteration
 debug    <- FALSE
 
-
-
 #-------------------------------------------------------------------------------
 # Run FLUAM for each year
 start_time <- Sys.time()
@@ -107,7 +105,7 @@ if(useMPO_Controls){
    sub_Years <- nest_years[[n]]
    sub_runs  <- nest_runs[[n]]
 
-     for(i in 2:length(sub_Years)){
+    for(i in 2:length(sub_Years)){
     # for(i in 2:2){
       print("*******************************************************")
       print(paste("Computing FLUAM :", sub_Years[i]))
@@ -121,7 +119,11 @@ if(useMPO_Controls){
       }
       
       source("source_code_new/FLUAM.R")
-     }
+      
+      if(sub_Years[i] == 2020 & sub_runs[i] == -1){
+        source("source_code_new/compute_growth_MPO_Deallocation_2020.R")
+      }
+    }
    
  }
   
@@ -130,7 +132,6 @@ if(useMPO_Controls){
 #-------------------------------------------------------------------------------
 end_time <- Sys.time()
 end_time - start_time
-
 
 #-------------------------------------------------------------------------------
 

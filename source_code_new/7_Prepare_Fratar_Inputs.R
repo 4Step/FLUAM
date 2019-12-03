@@ -7,7 +7,7 @@ computeFRATAR <- function(df_taz4, runType){
     mutate(boolUrbanArea = ifelse(areaType == 2, 1, 0),
            baseTrips =	as.numeric(ctl$fratConstant) + 
              fratEMPFact[areaType] * employment  +
-             fratHHFact[areaType] * HHTotal  + 
+             fratHHFact[areaType] * housing  + 
              as.numeric(ctl$fratUrbanArea)* boolUrbanArea,
            futureTrips =	as.numeric(ctl$fratConstant) + 
              fratEMPFact[areaType] * EmpTotal  +
