@@ -1,0 +1,24 @@
+
+Call:
+lm(formula = seedTrips ~ hh1 + hh2 + hh3 + emp1 + emp2 + emp3 - 
+    1, data = df_data)
+
+Residuals:
+   Min     1Q Median     3Q    Max 
+-38278   -351   1300   5133  47520 
+
+Coefficients:
+     Estimate Std. Error t value Pr(>|t|)    
+hh1   1.63509    0.23780   6.876 6.74e-12 ***
+hh2   2.80353    0.06238  44.940  < 2e-16 ***
+hh3   1.92318    0.31874   6.034 1.69e-09 ***
+emp1  0.75807    0.22130   3.426 0.000617 ***
+emp2  0.85090    0.03475  24.484  < 2e-16 ***
+emp3  1.54726    0.34949   4.427 9.71e-06 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 7507 on 6407 degrees of freedom
+Multiple R-squared:  0.4761,	Adjusted R-squared:  0.4757 
+F-statistic: 970.6 on 6 and 6407 DF,  p-value: < 2.2e-16
+
