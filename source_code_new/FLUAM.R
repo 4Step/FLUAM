@@ -29,13 +29,13 @@ ctl       <- setNames(as.list(df_ctl$Value), df_ctl$Key)
 source("source_code_new/1_Prepare_Data.R")
 
 # get decile constants in arrays
-resDecile    <- getResDecile(df_ctl)
-nonResDecile <- getNonResDecile(df_ctl)
-resDenDecile <- getDensityDecile(df_ctl)
+resDecile       <- getResDecile(df_ctl)
+nonResDecile    <- getNonResDecile(df_ctl)
+resDenDecile    <- getDensityDecile(df_ctl)
 fratarConstant  <- getFratarConst(df_ctl)
 
 fratEMPFact  <- fratarConstant$fratEMPFact
-fratHHFact  <- fratarConstant$fratHHFact
+fratHHFact   <- fratarConstant$fratHHFact
 
 # Load SE data
 df_taz  <- loadSEData(taz_pd_file, curr_year)

@@ -4,3 +4,6 @@
 .Ruserdata
 /Input/networks_skims/*
 /Output/*
+/Output_Set-A/*
+/Output_Set-B/*
+/Output_Set-C/*
