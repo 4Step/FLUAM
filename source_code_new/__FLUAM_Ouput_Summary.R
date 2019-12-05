@@ -6,7 +6,7 @@ library(tidyverse)
 out_dir     <- "Output"
 out_file    <- "Set_A_Summary.xlsx"
 
-base_file   <- "Input/base_data/2015_TAZ_data_based_on_ParcelData_Nov1.xlsx"
+base_file   <- "Input/base_data/2015_TAZ_data_based_on_ParcelData.xlsx"
 
 # Get list of FLUAM outputs 
 fluam_files <- list.files(out_dir, pattern = ".xlsx")
