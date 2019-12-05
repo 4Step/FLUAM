@@ -20,7 +20,7 @@ Years      <- c(2015, 2020, 2025, 2030, 2035, 2040, 2045, 2050)
 runFLUAM   <- c(0,       1,    1,    1,    1,    1,    1,    1)
 runMPO     <- c(0,      -1,   -1,   -1,   -1,    0,    1,    1) 
 
-useMPO_Controls <- TRUE
+useMPO_Controls <- FALSE
 
 # DRI specification
 # 0 = provided are DRI totals 
@@ -46,6 +46,10 @@ DRI_file     <- "Input/controlTotals/FLUAM_DRI.xlsx"
 ext_Stn_file <- "Input/controlTotals/External_Stns_GrowthFactors.xlsx"
 
 mpo_base_file <- "Input/base_data/2040_TAZ_data_based_on_MPO_Models.xlsx"
+
+# tripGen_facs <- "Input/base_data/TripGen_kFactors.csv"
+tripGen_facs <- "Input/base_data/TripGen_scaleFactors.csv"
+
 
 # Max iterations 
 max_iter <- 20
@@ -131,7 +135,11 @@ if(useMPO_Controls){
 
 #-------------------------------------------------------------------------------
 end_time <- Sys.time()
-end_time - start_time
+runTime <- round(end_time - start_time, 2)
+units <- attr(runTime, "units")
+print("*******************************************************")
+print(paste("FLUAM Run Time  :", runTime, units))
+
 
 #-------------------------------------------------------------------------------
 

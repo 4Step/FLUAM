@@ -316,6 +316,13 @@ if(runType > 0){
 #-------------------------------------------------------------------------------
 print("Computing Trips / Fratar Inputs...")
 source("source_code_new/7_Prepare_Fratar_Inputs.R")
+
+# read k-factors for trip gen (ODME to hh, emp didn't match well)
+df_kfac <- read.csv(tripGen_facs)
+
+df_taz5b <- df_taz5b %>%
+           left_join(df_kfac, by = "growthCenter")
+
 df_taz6 <- computeFRATAR(df_taz5b, runType)
 
 print("Writing Outputs...")
