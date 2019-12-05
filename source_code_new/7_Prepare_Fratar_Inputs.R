@@ -5,15 +5,17 @@
 computeFRATAR <- function(df_taz4, runType){
   df_taz5 <- df_taz4 %>%
     mutate(boolUrbanArea = ifelse(areaType == 2, 1, 0),
-           baseTrips =	as.numeric(ctl$fratConstant) + 
-             fratEMPFact[areaType] * employment  +
-             fratHHFact[areaType] * housing  + 
-             as.numeric(ctl$fratUrbanArea)* boolUrbanArea,
-           futureTrips =	as.numeric(ctl$fratConstant) + 
-             fratEMPFact[areaType] * EmpTotal  +
-             fratHHFact[areaType] * HHTotal  + 
-             as.numeric(ctl$fratUrbanArea)* boolUrbanArea,
-           growth = futureTrips / baseTrips
+           baseTrips     = as.numeric(ctl$fratConstant) + 
+                           fratEMPFact[areaType] * employment  +
+                           fratHHFact[areaType] * housing  + 
+                           as.numeric(ctl$fratUrbanArea)* boolUrbanArea ,
+           baseTrips     = baseTrips * scale_fac,
+           futureTrips   = as.numeric(ctl$fratConstant) + 
+                           fratEMPFact[areaType] * EmpTotal  +
+                           fratHHFact[areaType] * HHTotal  + 
+                           as.numeric(ctl$fratUrbanArea)* boolUrbanArea ,
+           futureTrips   = futureTrips * scale_fac,
+           growth        = futureTrips / baseTrips
     )
   
   # For MPO model

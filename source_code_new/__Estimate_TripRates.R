@@ -1,6 +1,8 @@
 # Fratar trips
 # Estimate new Regression Equations
 # Run IPF with seed 
+library(plotly)
+
 
 #-------------------------------------------------------------------------------
 # Get Seed Trip Table and Marginals
@@ -42,9 +44,6 @@ getSeedTT <- function(seedTT_file){
 #-------------------------------------------------------------------------------
 seedTT_file   <- "Input/base_data/adjusted_seed.csv"
 taz_pd_file   <- "Input/base_data/2015_TAZ_data_based_on_ParcelData_Nov1.xlsx"
-read_newdata  <- "Output_Set-A/2020_FLUAM_Output.xlsx"
-
-# dt_seedTT <- fread(seedTT_file)
 
 # Get Seed trip table and tripends by zone 
 ret <- getSeedTT(seedTT_file)
@@ -73,8 +72,8 @@ df_data <- df_pd %>%
 
 # Estimate 
 mod <- lm(data = df_data, 
-                 seedTrips ~  hh1 + hh2 + hh3 +  emp1 + emp2 + emp3 -1) 
-
+                 seedTrips ~  hh1 + hh2 + hh3 +  emp1 + emp2 + emp3 -1)
+                 # seedTrips ~  housing + emp1 + emp2 + emp3 -1) 
 
 # Add old and new estimated results (next to seed) 
 df_data <- df_data %>%
@@ -90,7 +89,11 @@ df_data <- df_data %>%
                                  employment * empFact +
                                  ctl$fratUrbanArea * boolUrban) %>%
           mutate(diff_old = round(estOld - seedTrips, 0),
-                 diff_new = round(estNew - seedTrips, 0))
+                 diff_new = ifelse(seedTrips > 0, round( mod$residuals, 0), 0),
+                 kp_fac = estNew + diff_new)
+
+# Ideally we should not have zone based factors, but to match ODME trips based on hh, emp we need to add residuals back (as k-factors)
+df_kfactors <- df_data %>% select(TAZ, k_fac = diff_new)
 
 # Summarise differences by county
 sumCounty <- df_data %>%
@@ -98,21 +101,19 @@ sumCounty <- df_data %>%
              summarise_at(vars(diff_old, diff_new), list(min, max, mean, sum))
 
 colnames(sumCounty) <- c("County",
-                         paste(rep(c("old", "new"), 4),rep(c("min", "max", "mean", "net"),each = 2))) 
+                         paste(rep(c("old", "new"), 4),rep(c("min", "max", "mean", "net"),each = 2)))
+
+# Summarise trip by county
+tripsByCounty <- df_data %>%
+             group_by(growthCenter) %>%
+             summarise_at(vars(seedTrips, estNew), sum) %>%
+             mutate(scale_fac = seedTrips / estNew)
 
 # Get r-squared for old estimator
 mod_old <- lm(data = df_data, seedTrips ~  estOld)
 
-library(plotly)
-  
+
 # plot existing and new estimated trips
-# scatter_plot <- plot_ly(data = df_data, x = ~seedTrips) %>%
-    # add_trace(y = ~estNew, name = "new", mode = "markers") %>%
-    # add_trace(y = ~estOld, name = "old", mode = "markers") %>%
-    # layout(annotations = list(
-    #        text = paste0("<b>re-estimated </b> r.squared: ",
-    #                        round(summary(mod)$r.squared,4)),
-    #         x = 60000, y = 100000,showarrow=FALSE ))
 scatter_plot <- plot_ly(data = df_data, x = ~seedTrips) %>%
       add_trace(y = ~estNew, name = "new", mode = "markers") %>%
       add_trace(y = ~estOld, name = "old", mode = "markers") %>%
@@ -135,9 +136,13 @@ x <- cbind(var, x1)
 # df_data$estNew
 excel_data <- list("data" = df_data,
                    "estimators" = x,
-                   "County_Summary" = sumCounty)
+                   "County_Summary" = sumCounty,
+                   "k-factor" = df_kfactors,
+                   "scale_factor" = tripsByCounty)
 
 write.xlsx(excel_data, "reference/TripGeneration/TripRate_Estimation.xlsx") 
+
+
 #-------------------------------------------------------------------------------
 
 
