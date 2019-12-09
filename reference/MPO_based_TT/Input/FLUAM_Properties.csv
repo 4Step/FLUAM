@@ -1,13 +1,13 @@
 Type,Key,Value,Description
 CTL,ctl.7,-1.7354,TravelTimeAdjustment
-FRATAR,fratConstant,565.8855,Constant
-fratEmpFact,fratEmpFact.1,10.8091,RUREMP (Area Type 1)
-fratEmpFact,fratEmpFact.2,7.0701,URBEMP (Area Type 2)
-fratEmpFact,fratEmpFact.3,10.0485,TRANEMP (Area Type 3)
-fratHHFact,fratHHFact.1,4.2835,RURHH (Area Type 1)
-fratHHFact,fratHHFact.2,10.1492,URBHH (Area Type 2)
-fratHHFact,fratHHFact.3,6.4855,TRANHH (Area Type 3)
-FRATAR,fratUrbanArea,955.2684,Urban area
+FRATAR,fratConstant,0.0000,Constant
+fratEmpFact,fratEmpFact.1,0.7581,RUREMP (Area Type 1)
+fratEmpFact,fratEmpFact.2,0.8509,URBEMP (Area Type 2)
+fratEmpFact,fratEmpFact.3,1.5473,TRANEMP (Area Type 3)
+fratHHFact,fratHHFact.1,1.64,RURHH (Area Type 1)
+fratHHFact,fratHHFact.2,2.80,URBHH (Area Type 2)
+fratHHFact,fratHHFact.3,1.92,TRANHH (Area Type 3)
+FRATAR,fratUrbanArea,0.0000,Urban area
 ResLandConsume,resConstantCoef,-0.7,constant
 ResLandConsume,resGrowBoundaryCoef,4,if inside the urban growth boundry
 ResLandConsume,resDistToCoast,-0.002723,distance to coast (dis_coast)

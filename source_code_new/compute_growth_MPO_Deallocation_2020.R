@@ -3,6 +3,11 @@
 df_2020  <- read.xlsx("Output/2020_FLUAM_Output.xlsx", sheet = "TAZ_Data") %>%
             select(TAZ, EmpTotal = employment, HHTotal = housing)
 
+df_kfac <- read.csv(tripGen_facs)
+
+df_2020 <- df_2020 %>%
+           left_join(df_kfac, by = "growthCenter")
+
 # Read 2015 data from
 df_2015   <- read.xlsx(taz_pd_file, sheet = "base_data") %>%
              select(TAZ, areaType, housing, employment)

@@ -66,7 +66,7 @@ library(openxlsx)
 #------------------------------------------------------------------------------- 
 # Run program
 #------------------------------------------------------------------------------- 
-skipInterpolation <- TRUE
+skipInterpolation <- FALSE
   
   if(!skipInterpolation){
     # Compile CFRPM data

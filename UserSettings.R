@@ -20,7 +20,7 @@ Years      <- c(2015, 2020, 2025, 2030, 2035, 2040, 2045, 2050)
 runFLUAM   <- c(0,       1,    1,    1,    1,    1,    1,    1)
 runMPO     <- c(0,      -1,   -1,   -1,   -1,    0,    1,    1) 
 
-useMPO_Controls <- FALSE
+useMPO_Controls <- TRUE
 
 # DRI specification
 # 0 = provided are DRI totals 
@@ -103,7 +103,7 @@ if(useMPO_Controls){
  nest_years <- list(sub_years1, sub_years2)
  nest_runs  <- list(sub_run1, sub_run2)
  
- for(n in 1:length(nest_years)){
+ for(n in 2:length(nest_years)){
  # for(n in 2:2){
    sub_Years <- nest_years[[n]]
    sub_runs  <- nest_runs[[n]]

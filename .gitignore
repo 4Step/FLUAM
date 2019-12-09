@@ -7,3 +7,5 @@
 /Output_Set-A/*
 /Output_Set-B/*
 /Output_Set-C/*
+/source_code_new/cube/*
+!/source_code_new/cube/export_to_trp.s
