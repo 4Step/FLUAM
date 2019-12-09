@@ -70,7 +70,7 @@ if(set_C){
    taz_data <- taz_data %>% 
                left_join(taz_data_2040, by = "TAZ") %>%
                gather(var, value, -TAZ, -growthCenter, -areaType) %>%
-               separate(var, c("year", "var"), sep = "_") %>%
+               separate(var, c("yyyy", "var"), sep = "_") %>%
                spread(var, value)
    
    # compute trips and growth rates
@@ -83,9 +83,9 @@ if(set_C){
     
     # Compute growth factors
     set_c_gfac <- taz_data %>%
-           mutate(year = ifelse(is.na(year), 0, year)) %>%
+           mutate(yyyy = ifelse(is.na(yyyy), 0, yyyy)) %>%
            select(-EMP, -HH, -boolUrbanArea) %>%
-           spread(year, Trips) %>%
+           spread(yyyy, Trips) %>%
            replace(is.na(.),0) %>%
            mutate(g2020 = ifelse( `2015` > 0 , `2020` / `2015`, 1),
                   g2025 = ifelse( `2020` > 0 , `2025` / `2020`, 1),
@@ -183,7 +183,7 @@ for(y in 1:length(Years)){
     
     # for final summary
     trip_summary <- taz_data %>% 
-                    filter(year == year) %>%
+                    filter(yyyy == year) %>%
                     select(TAZ, HH, EMP, tripGen = Trips) %>%
                     left_join(df_int_growth, by = "TAZ")
 
@@ -200,7 +200,7 @@ for(y in 1:length(Years)){
   print(paste("IPF seed table is   ", seedTT_file))
   print(paste("IPF output table is ", ipf_mat_file))
   print(paste("IPF log file is     ", log_file)) 
-  print(paste("run MPO triptables  ", scenNames[scenarios]))
+  print(paste("Scenario Name       ", scenNames[scenarios]))
   print("-----------------------------------------")
   
   # Read seed table
