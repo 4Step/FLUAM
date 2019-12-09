@@ -13,7 +13,7 @@ bool isConverge(NumericVector colsum2, NumericVector col_target);
 DataFrame mat2DF(NumericMatrix &mat);
 
 // [[Rcpp::export]]
-List getSomething(DataFrame df, NumericVector gfac, NumericVector tripEnds, int maxTrips, int max_iter) {
+List runIPF(DataFrame df, NumericVector gfac, NumericVector tripEnds, int maxTrips, int max_iter) {
   
   // this is only for the developer and is turned on here
   bool debug = 0;
@@ -82,12 +82,10 @@ List getSomething(DataFrame df, NumericVector gfac, NumericVector tripEnds, int 
 
     // Cap them at max and lower the initial growth factors
     if(row_target[x] > maxTrips) {
-      row_target[x] = maxTrips;
-      gfac[x] = 0.5;
+       row_target[x] = maxTrips;
     }
     if(col_target[x] > maxTrips) {
-      col_target[x] = maxTrips;
-      gfac[x] = 0.5;
+       col_target[x] = maxTrips;
      }
   }
   
@@ -112,7 +110,7 @@ List getSomething(DataFrame df, NumericVector gfac, NumericVector tripEnds, int 
     
     // APPLY Initial FACTORS
     if(iter == 0){
-      Rcout << "Applying row factors \n";
+      // Rcout << "Applying row factors \n";
       m1 = applyFac(seedMat, gfac, "row");
     } else{
       rcfac = computeFac(row_target, iter_rowTotal);
@@ -178,15 +176,20 @@ List getSomething(DataFrame df, NumericVector gfac, NumericVector tripEnds, int 
     // check for convergence
     converge = isConverge(row_target, iter_rowTotal);
     
-    if(converge == 1){
-      Rcout << " Model converged at iteration : " << iter << std::endl ;
+    // message at the end
+    if((converge == 1) || (iter == max_iter)){
+      ret["rowsum"] = iter_rowTotal;
+      ret["colsum"] = iter_colTotal;
+      if(converge == 1){
+        Rcout << " Model converged at iteration : " << iter << std::endl ;
+      } else if(iter == max_iter){
+        Rcout << " Model NOT converged at iteration : " << iter << std::endl ;
+      } 
     }
+
     
     // DEBUG: Not sure if we need to report every iteration (leave it for debug)
     if(debug){
-      
-      ret["rowsum2"] = iter_rowTotal;
-      ret["colsum2"] = iter_colTotal;
       
       Rcout << "------------------------------------------------------------------" << std::endl;
       Rcout << "Target & Iterim Trip Ends: Iteration =  " << iter << std::endl;
@@ -313,9 +316,9 @@ List getMatRCAccum(NumericMatrix &mat ) {
     for (int x = 0; x < row_sum.size(); ++x) {
       row_sum[x] = std::accumulate(mat(x,_).begin(), mat(x,_).end(), 0.0);
       
-      if(x == 0){
-         // Rcout << "First row value : " << row_sum[x] << "\n";
-      }
+      // if(x == 0){
+      //   Rcout << "First row value : " << row_sum[x] << "\n";
+      // }
     }
     
     // Rcout << "Number of cols : " << col_sum.size() << "\n";

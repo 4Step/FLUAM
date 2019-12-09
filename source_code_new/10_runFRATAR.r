@@ -1,18 +1,18 @@
 
-
-# C++ function to compute distances and get nodes
+# C++ function to run iterative proportional fitting with capping
 sourceCpp("source_code_new/compute_IPF.cpp")
 
 year          <- 2020
-
 seedTT_file   <- "Input/base_data/adjusted_seed.csv"
 taz_pd_file   <- "Input/base_data/2015_TAZ_data_based_on_ParcelData_Nov1.xlsx"
-read_newdata  <-  paste0("Output/",year,"_FLUAM_Output.xlsx")
 ext_Stn_file  <- "Input/controlTotals/External_Stns_GrowthFactors.xlsx"
 
 
 # Read seed table
 dt_seedTT <- fread(seedTT_file)
+
+# read growth factors
+read_newdata  <-  paste0("Output/",year,"_FLUAM_Output.xlsx")
 
 # Get growth factors
 df_ext <- read.xlsx(ext_Stn_file, sheet = "ext_growthrates") %>%
@@ -68,8 +68,8 @@ start_time <- Sys.time()
 # Print log file
 sink("fratar.log")
 
-# Run FRATAR
-ret <- getSomething(dt_seedTT, df_growth$growth,df_int_tripends$futureTrips, 80000, 20)
+# Run FRATAR (2D IPF)
+ret <- runIPF(dt_seedTT, df_growth$growth,df_int_tripends$futureTrips, 80000, 20)
 # write.csv(ret, "new_mat.csv")
 sink()
 end_time <- Sys.time()
@@ -80,6 +80,14 @@ newMat <- ret$newMat %>% setDT()
 newMat <- newMat[, Trip := round(Trip,0)]
 fwrite(newMat, "new_mat.csv")
 
+# Final output
+rowsum <- ret$rowsum
+colsum <- ret$colsum
+IPF_tripends <- cbind(df_growth$TAZ, rowsum, colsum)
+
+write.csv(IPF_tripends, "IPF_tripends.csv", row.names = F)
+
+
 
 # rowSum = newMat[, sum(Trip), by = I]
 # colSum = newMat[, sum(Trip), by = J]
@@ -87,17 +95,17 @@ fwrite(newMat, "new_mat.csv")
 # fwrite(colSum, "colSum.csv")
 
 # Interim values
-x <- ret$row_seed
-y <- ret$col_seed
-x0 <- ret$row_target
-y0 <- ret$col_target
-x1 <- ret$rowsum1
-y1 <- ret$colsum1
-x2 <- ret$rowsum2
-y2 <- ret$colsum2
+# x <- ret$row_seed
+# y <- ret$col_seed
+# x0 <- ret$row_target
+# y0 <- ret$col_target
+# x1 <- ret$rowsum1
+# y1 <- ret$colsum1
 
-allY <- cbind(y, y0, y1, y2)
-allX <- cbind(x, x0, x1, x2)
+
+
+# allY <- cbind(y, y0, y1, y2)
+# allX <- cbind(x, x0, x1, x2)
 
 # write.csv(allX, "rowSum.csv")
 # write.csv(allY, "colSum.csv")
