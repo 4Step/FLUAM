@@ -1,6 +1,3 @@
-# libaray(tidyverse)
-# library(stringr)
-# library(openxlsx)
 
 #-------------------------------------------------------------------------------
 # Reads input data files
@@ -21,6 +18,11 @@ fratHHFact <- df_ctl %>%
                mutate(Value = as.numeric(Value)) %>%
                pull(Value)
 #------------------------------------------------------------------------------- 
+# IF we skip the first two steps then read thier ouput
+if(skipInterpolation){
+  df_b2 <- read.csv("Output/df_b2.csv")
+}
+
 # Compute Trips 
 df_taz <- df_b2 %>%
 mutate(boolUrbanArea = ifelse(areaType == 2, 1, 0),
@@ -46,7 +48,17 @@ df_taz2 <- df_taz2 %>%
                   g2035 = ifelse( `2030` > 0 , `2035` / `2030`, 1),
                   g2040 = ifelse( `2035` > 0 , `2040` / `2035`, 1),
                   g2045 = ifelse( `2040` > 0 , `2045` / `2040`, 1),
-                  g2050 = ifelse( `2045` > 0 , `2050` / `2045`, 1)) %>%
+                  g2050 = ifelse( `2045` > 0 , `2050` / `2045`, 1)) 
+
+# Save sumamry files for IPF
+df_taz2_tripEnds <- df_taz2 %>% 
+            select(TAZ, `2015`, `2020`, `2025`, `2030`, `2035`, `2040`, `2045`, `2050`)
+
+df_taz2_gcFac <- df_taz2 %>% 
+            select(TAZ, g2020, g2025, g2030, g2035, g2040, g2045, g2050)
+
+
+df_taz2 <- df_taz2 %>%
            select(TAZ, g2020, g2025, g2030, g2035, g2040, g2045, g2050) %>%
            gather(year, growth, -TAZ) %>%
            mutate(year = as.numeric(gsub("g","", year)),
@@ -93,6 +105,12 @@ for(y in 1:length(years)){
   excel_data[[as.character(years[y])]] <- df_taz_trip
    
 }
+
+
+# Append trip ends
+excel_data[["tripGen"]]   <- df_taz2_tripEnds
+excel_data[["growthFac"]] <- df_taz2_gcFac
+
 
 out_file <- paste0("Output/summary_MPO_Output.xlsx")
 

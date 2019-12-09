@@ -159,6 +159,8 @@ df_b2 <- df_b %>%
          select(TAZ, areaType) %>%
          full_join(df_tsm, by = "TAZ")
 
+write.csv(df_b2,  "Output/df_b2.csv", row.names = F)
+
 # write this data out
 df_b3 <- df_b2 %>%
          gather(var, value, -TAZ, -areaType, -year) %>%

@@ -73,8 +73,11 @@ List runIPF(DataFrame df, NumericVector gfac, NumericVector tripEnds, int maxTri
       row_target[x] =  gfac[x] * seed_rowTotal[x];
       col_target[x] =  gfac[x] * seed_colTotal[x];
     } else if (gfac[x] == -9999){
-      row_target[x] = tripEnds[x];
-      col_target[x] = tripEnds[x];
+      // base trips are zero but seed table consists of trips 
+      if(seed_rowTotal[x]  > 0)  row_target[x] = tripEnds[x];
+      if(seed_rowTotal[x] == 0)  row_target[x] = 0;
+      if(seed_colTotal[x]  > 0)  col_target[x] = tripEnds[x];
+      if(seed_colTotal[x] == 0)  col_target[x] = 0;
       gfac[x] = 1.0;
     } else{
       Rcout << "Check growth factors and trip ends " << std::endl;
@@ -83,9 +86,11 @@ List runIPF(DataFrame df, NumericVector gfac, NumericVector tripEnds, int maxTri
     // Cap them at max and lower the initial growth factors
     if(row_target[x] > maxTrips) {
        row_target[x] = maxTrips;
+       gfac[x] = 0.5;
     }
     if(col_target[x] > maxTrips) {
        col_target[x] = maxTrips;
+       gfac[x] = 0.5;
      }
   }
   
@@ -115,7 +120,7 @@ List runIPF(DataFrame df, NumericVector gfac, NumericVector tripEnds, int maxTri
     } else{
       rcfac = computeFac(row_target, iter_rowTotal);
       
-      // cap growth factor 
+      // cap growth factor (to 50% for all maxed out zones)
       for(int x = 0; x < max_zones; x++ ){
         if(iter_rowTotal[x] >= maxTrips) {
           iter_rowTotal[x] = maxTrips;
@@ -155,6 +160,7 @@ List runIPF(DataFrame df, NumericVector gfac, NumericVector tripEnds, int maxTri
     for(int x = 0; x < max_zones; x++ ){
       if(iter_colTotal[x] >= maxTrips) {
         iter_colTotal[x] = maxTrips;
+        // rcfac[x] = 0.45;
       }
     }  
     
@@ -165,13 +171,6 @@ List runIPF(DataFrame df, NumericVector gfac, NumericVector tripEnds, int maxTri
     rowColSums_iter = getMatRCSums2(m1);
     iter_rowTotal = rowColSums_iter["rowSum"];
     iter_colTotal = rowColSums_iter["colSum"];
-    
-    // cap trip ends & growth factor
-    // for(int x = 0; x < max_zones; x++ ){
-    //   if(iter_rowTotal[x] > maxTrips) {
-    //     iter_rowTotal[x] = maxTrips;
-    //   }
-    // }
     
     // check for convergence
     converge = isConverge(row_target, iter_rowTotal);
@@ -230,7 +229,8 @@ bool isConverge(NumericVector colsum2, NumericVector col_target){
    
    // check for converence
    for (int x = 0; x < size; x++) {
-     if(converged & (abs(colsum2[x] - col_target[x]) > 100)) converged = 0;
+     
+     if((colsum2[x] > 0) & (col_target[x] > 0) & (abs(colsum2[x] - col_target[x]) > 100)) converged = 0;
    }
   
   return converged;
@@ -248,7 +248,7 @@ List getMarginals(DataFrame df,  int max_zones) {
     NumericVector row_total (max_zones);
     NumericVector col_total (max_zones);
     
-    // TODO:: use iterator instead of value at index 
+    // TODO:: use auto iterator instead of value at index (cpp11)
     for (int x = 0; x < size; x++) {
       // CPP index starts with zero but R uses 1
       row_total[i[x] - 1] += v[x];
@@ -311,18 +311,10 @@ List getMatRCAccum(NumericMatrix &mat ) {
     NumericVector row_sum(mat.nrow());
     NumericVector col_sum(mat.ncol());
     
-    // Rcout << "Number of rows : " << row_sum.size() << "\n";
-    
     for (int x = 0; x < row_sum.size(); ++x) {
       row_sum[x] = std::accumulate(mat(x,_).begin(), mat(x,_).end(), 0.0);
-      
-      // if(x == 0){
-      //   Rcout << "First row value : " << row_sum[x] << "\n";
-      // }
     }
-    
-    // Rcout << "Number of cols : " << col_sum.size() << "\n";
-    
+  
     for (int x = 0; x < col_sum.size(); x++) {
       col_sum[x] = std::accumulate(mat(_,x).begin(), mat(_,x).end(), 0.0);
     }
@@ -409,27 +401,21 @@ NumericVector getMatRCSums(NumericMatrix &mat, String type) {
     
     if(type == "row"){
       for (int x = 0; x < nr; ++x) {
-        // double sum = 0.0;
         for(int y = 0; y < nc; ++y) {
           if(mat(x , y) > 0){
             vec_sum[x] += mat(x , y);
           }
         }
-       // vec_sum[x] = sum;
       } 
     } else if (type == "col"){
-      // NumericVector vec_sum(nc);
       for (int y = 0; y < nc; ++y) {
         NumericVector col = mat( _ , y);
-        // double sum = 0.0;
         for(int x = 0; x < col.size() ; ++x) {
-          // if((y < 2) & ( x < 10)) Rcout << "mat cells col " << y << " row " << x << " value = " << mat(x, y) << " " << col[x] << " \n";
+          // vec_sum[x] += mat(x , y);
           if(col[x] > 0){
             vec_sum[y] += col[x] ;
           }
         }
-       // vec_sum[y] = sum;
-       // if(y < 2)  Rcout << "colsum at col "<< y << " = " << vec_sum[y] << " \n";
       }
     } else{
       Rcout << "ERROR: specify type as 'row' or 'col' \n" ;

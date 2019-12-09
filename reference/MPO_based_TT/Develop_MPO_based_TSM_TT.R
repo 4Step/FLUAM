@@ -13,6 +13,11 @@
 #       for all regional model zones, this should be same as linear interpolation growth rate)
 #   Summarise marginals by county and compute increments
 
+library(tidyverse)
+library(stringr)
+library(openxlsx)
+
+
 #------------------------------------------------------------------------------- 
 # List of Inputs
 #------------------------------------------------------------------------------- 
@@ -61,12 +66,16 @@
 #------------------------------------------------------------------------------- 
 # Run program
 #------------------------------------------------------------------------------- 
-  # Compile CFRPM data
-  source("script/compile_CFRPM_Interim_Years_to_TSM.R")
+skipInterpolation <- TRUE
   
-  # Interpolate between the regional model years
-  source("script/Interpolate.R")
-  
+  if(!skipInterpolation){
+    # Compile CFRPM data
+    source("script/compile_CFRPM_Interim_Years_to_TSM.R")
+    
+    # Interpolate between the regional model years
+    source("script/Interpolate.R")
+  }
+
   # Consolidate regional model, CFRPM, FLUAM, DRI, External data towards FRATAR Inputs
   source("script/Build_Fratar_files.R")
   

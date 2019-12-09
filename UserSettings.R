@@ -50,7 +50,6 @@ mpo_base_file <- "Input/base_data/2040_TAZ_data_based_on_MPO_Models.xlsx"
 # tripGen_facs <- "Input/base_data/TripGen_kFactors.csv"
 tripGen_facs <- "Input/base_data/TripGen_scaleFactors.csv"
 
-
 # Max iterations 
 max_iter <- 20
 
