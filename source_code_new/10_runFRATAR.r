@@ -36,7 +36,7 @@ taz_pd_file    <- "Input/base_data/2015_TAZ_data_based_on_ParcelData.xlsx"
 ext_Stn_file   <- "Input/controlTotals/External_Stns_GrowthFactors.xlsx"
 
 # Ouput summary file
-summary_out_file <- "Output/IPF_Ssummary.xlsx"
+summary_out_file <- "Output/IPF_Summary.xlsx"
 
 # year          <- 2020
 start_time <- Sys.time()
@@ -76,7 +76,8 @@ for(y in 1:length(Years)){
     # For new zones (no hh in base year), growth fac is NA, flag such zones
     df_int_growth <- df_int %>% 
                      select(TAZ, growth) %>%
-                     mutate(growth = ifelse(is.na(growth), -9999, growth)) 
+                     mutate(growth = ifelse(is.na(growth), -9999, growth),
+                            growth = ifelse(growth > 2, -9999, growth)) 
     
     # Use new trip end totals for such zones
     df_int_tripends <- df_int %>% 
@@ -163,10 +164,31 @@ for(y in 1:length(Years)){
   
 }
 
+# summary of trips
+names(excel_data) <- Years
+
+for(y in 1: length(Years)){
+  temp_total <- excel_data[[y]] %>% summarise_at(vars(HH, tripGen, IPF_rowsum), sum)
+  temp_total <- cbind(Years[y], temp_total)
+  if(y == 1){
+    trp_total <- temp_total
+  } else{
+     trp_total <- rbind(trp_total, temp_total)
+  }
+}
+
+trp_total <- trp_total %>%
+             mutate(rate_gen = round(tripGen / HH,2),
+                    rate_ipf = round(IPF_rowsum / HH,2))  
+
+excel_data[["trip_summary"]] <- trp_total
+
 # Write output trip end summary
-# names(excel_data) <- Years
 write.xlsx(excel_data, summary_out_file) 
 
 end_time <- Sys.time()
 end_time - start_time
+
+
+
 
