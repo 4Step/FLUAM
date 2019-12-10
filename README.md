@@ -2,8 +2,8 @@
 [1. Introduction](#Introduction)  
 [2. History](#History)  
 [3. New Codebase](#Codebase)    
-[4. Setup](#SetupInstallation)  
-[5. User Guide](#UserGuide)  
+[4. Setup & Installation](#Setup-&-Installation)  
+[5. User Guide](#UsersGuide)  
 
 ---
 ## Introduction
@@ -59,7 +59,7 @@ FLUAM 3.0 runs all years, updates land consumption and developed area, based on 
 
 ---
 
-## Setup & Installation
+## Setup-&-Installation
 
 ### Download
 Download or clone the latest version from GIT (either of the two sites)   
@@ -79,7 +79,9 @@ Open .gitignore file to see list of folders, files excluded from GIT. These file
 
 
 ### Install
-![R](reference/userGuide/images/Rlogo.png) [R](https://cran.r-project.org/)  
+![R](reference/userGuide/images/RlogoSmall.png) [R from CRAN](https://cran.r-project.org/)
+
+
 ![R-Studio](reference/userGuide/images/RStudio_logo.png) [R-Studio](www.rstudio.com)
 
 ### Setup
@@ -99,7 +101,7 @@ To install run the following command in the R-Console
 
 ---  
 
-## User's Guide  
+## UsersGuide  
 ### User Settings
 The model consists of few settings to run different scenarios. Primarily to allocate from 2015 or to deallocate from 2040 downwards. The deallocation is run if the analyst need to use MPO forecasts as starting point and reduce every 5 years.   The figure below shows the user settings.
 
