@@ -79,8 +79,8 @@ Open .gitignore file to see list of folders, files excluded from GIT. These file
 
 
 ### Install
-![R](https://www.r-project.org/logo/Rlogo.png =30x30) [R](https://cran.r-project.org/)  
-![R-Studio](https://d33wubrfki0l68.cloudfront.net/62bcc8535a06077094ca3c29c383e37ad7334311/a263f/assets/img/logo.svg =30x30) [R-Studio](www.rstudio.com)
+![R](reference/userGuide/images/Rlogo.png) [R](https://cran.r-project.org/)  
+![R-Studio](reference/userGuide/images/RStudio_logo.png) [R-Studio](www.rstudio.com)
 
 ### Setup
 Install R first then R-Studio later. Double click on **FLUAM.Rproj** to open in R-Studio.
