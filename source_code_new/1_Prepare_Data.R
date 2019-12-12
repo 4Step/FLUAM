@@ -63,7 +63,11 @@ loadSEData <- function(taz_pd_file, year){
     
     SE_file <- paste0("Output/",year, "_FLUAM_Output.xlsx") 
     
-    df_taz   <- read.xlsx(SE_file, sheet = "TAZ_Data") 
+    df_taz   <- read.xlsx(SE_file, sheet = "TAZ_Data")
+    
+    # exclude extra columns
+    df_taz   <- df_taz[,1:15]
+    
     #    %>%
     #   # select(TAZ,  housing = HHTotal, employment = EmpTotal)
     #   select(TAZ,  housing, employment)
@@ -79,6 +83,9 @@ loadSEData <- function(taz_pd_file, year){
   } else{
     df_taz <- df_pd
   }
+  
+  # To avoid crashing from NA's in the data
+  df_taz[is.na(df_taz)] = 0
   
   return(df_taz)
 }

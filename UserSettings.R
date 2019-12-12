@@ -20,7 +20,7 @@ Years      <- c(2015, 2020, 2025, 2030, 2035, 2040, 2045, 2050)
 runFLUAM   <- c(0,       1,    1,    1,    1,    1,    1,    1)
 runMPO     <- c(0,      -1,   -1,   -1,   -1,    0,    1,    1) 
 
-useMPO_Controls <- TRUE
+useMPO_Controls <- FALSE
 
 # DRI specification
 # 0 = provided are DRI totals 
@@ -37,7 +37,6 @@ rate = 1.5
 ctl_file     <- "Parameter/FLUAM_Properties.csv"
 
 # 2015 SE data developed from Parcel Data
-# taz_pd_file  <- "Input/base_data/2015_TAZ_data_based_on_ParcelData.xlsx"
 taz_pd_file  <- "Input/base_data/2015_TAZ_data_based_on_ParcelData.xlsx"
 
 gc_file      <- "Input/controlTotals/FLUAM_Growth_Controls.xlsx"
