@@ -41,6 +41,16 @@ fratHHFact   <- fratarConstant$fratHHFact
 df_taz  <- loadSEData(taz_pd_file, curr_year)
 max_taz <- max(df_taz$TAZ)
 
+
+# if(debug_taz > 0) {
+#   print("Line 46")
+#   df_taz  %>% 
+#     filter(TAZ == debug_taz) %>% 
+#     select(debug_fields) %>%
+#     as.data.frame() %>% 
+#     print()
+# }
+
 # list of field names
 taz_fields <- colnames(df_taz)
 
@@ -67,6 +77,14 @@ df_taz <- updateDensityThresholds(df_taz, df_dc)
 # append DRI 
 df_taz <- appendDRI(df_taz, df_DRI)
 
+# if(debug_taz > 0) {
+#   print("Line 81")
+#   df_taz  %>% 
+#     filter(TAZ == debug_taz) %>% 
+#     select(debug_fields) %>%
+#     as.data.frame() %>% 
+#     print()
+# }
 #-------------------------------------------------------------------------------
 # Land Consumption Summary 
 #-------------------------------------------------------------------------------
@@ -76,6 +94,14 @@ before  <- summariseLandByCategory(df_taz)
 df_taz  <- recomputeAvailableShares(df_taz, Agri_res_noRes_Flag) 
 before2 <- summariseLandByCategory(df_taz)
 
+# if(debug_taz > 0) {
+#   print("Line 98")
+#   df_taz  %>% 
+#     filter(TAZ == debug_taz) %>% 
+#     select(debug_fields) %>%
+#     as.data.frame() %>% 
+#     print()
+# }
 #-------------------------------------------------------------------------------
 # Compute accessibilities
 #-------------------------------------------------------------------------------
@@ -84,12 +110,32 @@ print("Computing Accessibilities...")
 # Load Accessibility Function
 source("source_code_new/2_Compute_Accessibilities.R")
 
+# if(debug_taz > 0) {
+#   print("Line 114")
+#   df_taz  %>% 
+#     filter(TAZ == debug_taz) %>% 
+#     select(debug_fields) %>%
+#     as.data.frame() %>% 
+#     print()
+# }
+
 # current year accessibility
-cur_AdjTTimeWgtByHH_Emp <- computeAccessibility(dt_cskim, df_ctl, df_taz)
+temp_taz <- copy(df_taz)
+cur_AdjTTimeWgtByHH_Emp <- computeAccessibility(dt_cskim, df_ctl, temp_taz)
 setnames(cur_AdjTTimeWgtByHH_Emp, c("TAZ","cur_AdjTTimeWgtByHH_Emp"))
 
+# if(debug_taz > 0) {
+#   print("Line 127")
+#   df_taz  %>% 
+#     filter(TAZ == debug_taz) %>% 
+#     select(debug_fields) %>%
+#     as.data.frame() %>% 
+#     print()
+# }
+
 # next year accessibility
-avgAdjTTimeWgtByHH_Emp  <- computeAccessibility(dt_nskim, df_ctl, df_taz)
+temp_taz <- copy(df_taz)
+avgAdjTTimeWgtByHH_Emp  <- computeAccessibility(dt_nskim, df_ctl, temp_taz)
 
 # Append 
 setDT(df_taz)
@@ -97,15 +143,44 @@ setkey(df_taz, "TAZ")
 setkey(avgAdjTTimeWgtByHH_Emp, "TAZ")
 setkey(cur_AdjTTimeWgtByHH_Emp, "TAZ")
 
+
+
 df_taz <- merge(df_taz, cur_AdjTTimeWgtByHH_Emp, by = "TAZ", all.x = T )
 df_taz <- merge(df_taz, avgAdjTTimeWgtByHH_Emp, by = "TAZ", all.x = T )
+setkey(df_taz, NULL)
+
+# if(debug_taz > 0) {
+#   print("Line 128")
+#   df_taz  %>% 
+#     filter(TAZ == debug_taz) %>% 
+#     select(debug_fields) %>%
+#     as.data.frame() %>% 
+#     print()
+# }
 
 # Scale accessibility
 df_taz <- getScaledAccessibility(df_taz)
 
+# if(debug_taz > 0) {
+#   print("Line 133")
+#   df_taz  %>% 
+#     filter(TAZ == debug_taz) %>% 
+#     select(debug_fields) %>%
+#     as.data.frame() %>% 
+#     print()
+# }
+
 # Compute accessibility category
 dt_taz2 <- df_taz[ , accessCategorical := computeCategorical(accessScaled), by = DOTDistrict]
 
+# if(debug_taz > 0) {
+#   print("Line 172")
+#   dt_taz2  %>% 
+#     filter(TAZ == debug_taz) %>% 
+#     select(debug_fields) %>%
+#     as.data.frame() %>% 
+#     print()
+# }
 #-------------------------------------------------------------------------------
 # calculateDistToIntersections
 #-------------------------------------------------------------------------------
@@ -120,7 +195,15 @@ sourceCpp("source_code_new/compute_distance.cpp")
 other_nodes <- getRampNodes(dt_link, dt_node, max_taz)
 zone_nodes  <- getCentroids(dt_node, max_taz)
 dt_taz2     <- getRampDistance(dt_taz2, zone_nodes, other_nodes)
-  
+
+# if(debug_taz > 0) {
+#   print("Line 195")
+#   dt_taz2  %>% 
+#     filter(TAZ == debug_taz) %>% 
+#     select(debug_fields) %>%
+#     as.data.frame() %>% 
+#     print()
+# }  
 #-------------------------------------------------------------------------------
 # Agriculture Land Conversion & Calculate Land Consumption
 #-------------------------------------------------------------------------------
@@ -132,11 +215,28 @@ if(runType > 0){
   dt_taz2 <- convertAgriculture(dt_taz2, next_year, curr_year, rate, Agri_res_noRes_Flag)
 }
 
+if(debug_taz > 0) {
+  print("Line 178")
+  dt_taz2  %>% 
+    filter(TAZ == debug_taz) %>% 
+    select(debug_fields) %>%
+    as.data.frame() %>% 
+    print()
+} 
+
 print("Computing Land Conumption...")  
 source("source_code_new/4_LandConspution_Variables.R")
 includeDev <- FALSE  # adds existing developed land towards redevelopment
 df_taz3 <- prepareLCVariables(dt_taz2, ctl, includeDev)
 
+# if(debug_taz > 0) {
+#   print("Line 192")
+#   df_taz3  %>% 
+#     filter(TAZ == debug_taz) %>% 
+#     select(debug_fields) %>%
+#     as.data.frame() %>% 
+#     print()
+# } 
 #-------------------------------------------------------------------------------
 # Allocate HH & EMP 
 #-------------------------------------------------------------------------------
@@ -158,6 +258,14 @@ df_taz4     <- ret$df_taz4
 empConverge <- ret$DRIEMPbyGrowthCenter %>%
                select(growthCenter, Control_EMP, EMP_model, unMet_EMP = diff, EMP_Flag = converge)
 
+# if(debug_taz > 0) {
+#   print("Line 221")
+#   df_taz4  %>% 
+#     filter(TAZ == debug_taz) %>% 
+#     select(debug_fields) %>%
+#     as.data.frame()%>% 
+#     print()
+# } 
 #-------------------------------------------------------------------------------
 # Recheck Available Land
 #-------------------------------------------------------------------------------
@@ -298,6 +406,15 @@ if(reRun_HH_for_UnMetCounties || reRun_EMP_for_UnMetCounties) {
       empConverge2 <- "Total EMP Demand is met in empConverge and so no reallocation is needed"
 }
 
+# if(debug_taz > 0) {
+#   print("Line 369")
+#   df_taz5a  %>% 
+#     filter(TAZ == debug_taz) %>% 
+#     select(debug_fields) %>%
+#     as.data.frame() %>% 
+#     print()
+# } 
+
 #-------------------------------------------------------------------------------
 # Compute land availability 
 #-------------------------------------------------------------------------------
@@ -330,13 +447,22 @@ fratar_file <- ifelse(runType ==1,
                        paste0("Output/",next_year,"_FratarInput.txt") ,
                        paste0("Output/",curr_year,"_FratarInput.txt"))
 
-writeFRATARInput(df_taz6, fratar_file, ext_Stn_file, next_year)
+# Turn on only to run FRATAR in tranplan
+# writeFRATARInput(df_taz6, fratar_file, ext_Stn_file, next_year)
 
 df_taz7 <- df_taz6 %>%
            select(-housing, -employment) %>%
            rename(housing = HHTotal, employment = EmpTotal) %>%
            select(taz_fields)
 
+# if(debug_taz > 0) {
+#   print("Line 418")
+#   df_taz5a  %>% 
+#     filter(TAZ == debug_taz) %>% 
+#     select(debug_fields) %>%
+#     as.data.frame() %>% 
+#     print()
+# } 
 #-------------------------------------------------------------------------------
 # Land Consumption Summary 
 #-------------------------------------------------------------------------------

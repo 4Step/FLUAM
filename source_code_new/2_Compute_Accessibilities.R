@@ -98,7 +98,7 @@ getScaledAccessibility <- function(df_taz){
   # Scale Accessibility
   df_taz[ , accessScaled := 0]
   
-  setkey(df_taz,NULL)
+  setkey(df_taz, NULL)
   df_taz[avgAdjTTimeWgtByHH_Emp > 0 , 
          accessScaled := pmin(1, log(avgAdjTTimeWgtByHH_Emp + 3) / log(the99th))]
   
