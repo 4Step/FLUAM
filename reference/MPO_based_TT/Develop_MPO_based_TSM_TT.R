@@ -17,7 +17,6 @@ library(tidyverse)
 library(stringr)
 library(openxlsx)
 
-
 #------------------------------------------------------------------------------- 
 # List of Inputs
 #------------------------------------------------------------------------------- 
@@ -68,6 +67,9 @@ library(openxlsx)
 #------------------------------------------------------------------------------- 
 skipInterpolation <- FALSE
   
+# To write Tranplan Fratar Inputs (FLUAM 2.1 compatabile)
+writeTrnPLnFratarInput <- FALSE
+
   if(!skipInterpolation){
     # Compile CFRPM data
     source("script/compile_CFRPM_Interim_Years_to_TSM.R")

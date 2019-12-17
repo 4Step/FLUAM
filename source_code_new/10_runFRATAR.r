@@ -32,12 +32,9 @@ path       <- "M:/Models/StateWide/TSM_Legacy/FLUAM"
 Years      <- c(2020, 2025, 2030, 2035, 2040, 2045, 2050)
 
 # To run set- A, set-B, set-C (mutually exclusively)
-set_A  <-  FALSE
-set_B  <-  FALSE
-set_C  <-  TRUE
+#one of ("set_A", "set_B", "set_C")
 
-scenarios <- c(set_A, set_B, set_C)
-scenNames <- c("set_A", "set_B", "set_C")
+runScenario <- "set_C"
 
 # Cap trip ends
 capTripEnds  <- 80000
@@ -57,45 +54,45 @@ start_time <- Sys.time()
 # Ouput tripend summary data
 excel_data <- list()  
 
-
-# Process for Set-C (2040)
-# TODO: Move this outside this process
-if(set_C){
-   
-   taz_data <- read.xlsx(paste0("Output/Set_C_Summary.xlsx"))
-   taz_data_2040 <- read.xlsx(paste0("Output/2040_FLUAM_Output.xlsx")) %>%
-                    select(TAZ, areaType)
-   
-   # reformat data
-   taz_data <- taz_data %>% 
-               left_join(taz_data_2040, by = "TAZ") %>%
-               gather(var, value, -TAZ, -growthCenter, -areaType) %>%
-               separate(var, c("yyyy", "var"), sep = "_") %>%
-               spread(var, value)
-   
-   # compute trips and growth rates
-    taz_data <- taz_data %>%   
-                mutate(boolUrbanArea = ifelse(areaType == 2, 1, 0),
-                 Trips =	as.numeric(ctl$fratConstant) + 
-                   fratEMPFact[areaType] * EMP  +
-                   fratHHFact[areaType] * HH  + 
-                   as.numeric(ctl$fratUrbanArea)* boolUrbanArea) 
-    
-    # Compute growth factors
-    set_c_gfac <- taz_data %>%
-           mutate(yyyy = ifelse(is.na(yyyy), 0, yyyy)) %>%
-           select(-EMP, -HH, -boolUrbanArea) %>%
-           spread(yyyy, Trips) %>%
-           replace(is.na(.),0) %>%
-           mutate(g2020 = ifelse( `2015` > 0 , `2020` / `2015`, 1),
-                  g2025 = ifelse( `2020` > 0 , `2025` / `2020`, 1),
-                  g2030 = ifelse( `2025` > 0 , `2030` / `2025`, 1),
-                  g2035 = ifelse( `2030` > 0 , `2035` / `2030`, 1),
-                  g2040 = ifelse( `2035` > 0 , `2040` / `2035`, 1),
-                  g2045 = ifelse( `2040` > 0 , `2045` / `2040`, 1),
-                  g2050 = ifelse( `2045` > 0 , `2050` / `2045`, 1)) %>%
-           select(TAZ, g2020, g2025, g2030, g2035, g2040, g2045, g2050)
-}
+# 
+# # Process for Set-C (2040)
+# # TODO: Move this outside this process
+# if(runScenario == "set_C"){
+#    
+#    taz_data <- read.xlsx(paste0("Output/Set_C_Summary.xlsx"))
+#    taz_data_2040 <- read.xlsx(paste0("Output/2040_FLUAM_Output.xlsx")) %>%
+#                     select(TAZ, areaType)
+#    
+#    # reformat data
+#    taz_data <- taz_data %>% 
+#                left_join(taz_data_2040, by = "TAZ") %>%
+#                gather(var, value, -TAZ, -growthCenter, -areaType) %>%
+#                separate(var, c("yyyy", "var"), sep = "_") %>%
+#                spread(var, value)
+#    
+#    # compute trips and growth rates
+#     taz_data <- taz_data %>%   
+#                 mutate(boolUrbanArea = ifelse(areaType == 2, 1, 0),
+#                  Trips =	as.numeric(ctl$fratConstant) + 
+#                    fratEMPFact[areaType] * EMP  +
+#                    fratHHFact[areaType] * HH  + 
+#                    as.numeric(ctl$fratUrbanArea)* boolUrbanArea) 
+#     
+#     # Compute growth factors
+#     set_c_gfac <- taz_data %>%
+#            mutate(yyyy = ifelse(is.na(yyyy), 0, yyyy)) %>%
+#            select(-EMP, -HH, -boolUrbanArea) %>%
+#            spread(yyyy, Trips) %>%
+#            replace(is.na(.),0) %>%
+#            mutate(g2020 = ifelse( `2015` > 0 , `2020` / `2015`, 1),
+#                   g2025 = ifelse( `2020` > 0 , `2025` / `2020`, 1),
+#                   g2030 = ifelse( `2025` > 0 , `2030` / `2025`, 1),
+#                   g2035 = ifelse( `2030` > 0 , `2035` / `2030`, 1),
+#                   g2040 = ifelse( `2035` > 0 , `2040` / `2035`, 1),
+#                   g2045 = ifelse( `2040` > 0 , `2045` / `2040`, 1),
+#                   g2050 = ifelse( `2045` > 0 , `2050` / `2045`, 1)) %>%
+#            select(TAZ, g2020, g2025, g2030, g2035, g2040, g2045, g2050)
+# }
 
 
 for(y in 1:length(Years)){
@@ -104,7 +101,6 @@ for(y in 1:length(Years)){
   # Loop Settings
   year      <- Years[y]
 
-  
   # outputs
   log_file     <- paste0("Output/",year,"_IPF.log")
   ipf_mat_file <- paste0("Output/",year,"_mat.csv")
@@ -122,14 +118,28 @@ for(y in 1:length(Years)){
   }
   
   # Read FLUAM Growth Factors
-  # SET-A growth factors
-  # if(!runMPO_tables){
-    
-  if(set_A){
-      read_newdata  <- paste0("Output/",year,"_FLUAM_Output.xlsx") 
-      sheetName     <- "debug_reallocate"
-      df_int        <- read.xlsx(read_newdata, sheet = sheetName) 
+  if(runScenario %in% c("set_A", "set_C")){
 
+    if(runScenario == "set_A"){
+      read_newdata  <- paste0("Output/Set_A_Summary.xlsx")
+    } else{
+      read_newdata  <- paste0("Output/Set_C_Summary.xlsx")
+    }
+    
+    # Read growth factors
+    df_growth <- read.xlsx(read_newdata, sheet = "growthFac") %>%
+                     select(TAZ, growth = paste0("g",year))
+    
+     # Read hh, emp data for summary
+    df_hh_EMP <- read.xlsx(read_newdata, sheet = "TAZ_Data") %>%
+                 select(TAZ, HH = paste0(year, "_HH"), EMP = paste0(year, "_EMP"))
+    
+    # Read Trips 
+    df_int <- read.xlsx(read_newdata, sheet = "taz_trips") %>%
+              select(TAZ, futureTrips = paste0(year)) %>%
+              left_join(df_hh_EMP, by = "TAZ") %>%
+              left_join(df_growth, by = "TAZ") 
+    
     # For new zones (no hh in base year), growth fac is NA, flag such zones
     df_int_growth <- df_int %>% 
                      select(TAZ, growth) %>%
@@ -142,14 +152,14 @@ for(y in 1:length(Years)){
                        # mutate(futureTrips =  0) %>%
                        select(TAZ, futureTrips)
     
-    # for final summary
+    # Summary
     trip_summary <- df_int %>% 
-                    select(TAZ, HH = HHTotal, EMP = EmpTotal, tripGen = futureTrips, growth)
+                    select(TAZ, HH, EMP, tripGen = futureTrips, growth)
   }
   
   # SET-B growth factors
   # Read MPO based Growth Factors
-  if(set_B){
+  if(runScenario == "set_B"){
     read_newdata  <- paste0("Output/summary_MPO_Output.xlsx")
     sheetName     <- "growthFac"
     
@@ -172,27 +182,27 @@ for(y in 1:length(Years)){
     
   }
   
-  # SET - C processing for growth factors
-  if(set_C){
-    
-    # For new zones (no hh in base year), growth fac is NA, flag such zones
-    df_int_growth <- set_c_gfac %>% 
-                     select(TAZ, growth = paste0("g", year)) %>%
-                     mutate(growth = ifelse(is.na(growth), -9999, growth),
-                            growth = ifelse(growth > 2, -9999, growth)) 
-    
-    # for final summary
-    trip_summary <- taz_data %>% 
-                    filter(yyyy == year) %>%
-                    select(TAZ, HH, EMP, tripGen = Trips) %>%
-                    left_join(df_int_growth, by = "TAZ")
-
-    # Use new trip end totals for such zones
-    df_int_tripends <- trip_summary %>% 
-                       mutate(futureTrips = ifelse(is.na(growth), tripGen, 0)) %>%
-                       select(TAZ, futureTrips)
-    
-  }
+  # # SET - C processing for growth factors
+  # if(runScenario == "set_C"){
+  #   
+  #   # For new zones (no hh in base year), growth fac is NA, flag such zones
+  #   df_int_growth <- set_c_gfac %>% 
+  #                    select(TAZ, growth = paste0("g", year)) %>%
+  #                    mutate(growth = ifelse(is.na(growth), -9999, growth),
+  #                           growth = ifelse(growth > 2, -9999, growth)) 
+  #   
+  #   # for final summary
+  #   trip_summary <- taz_data %>% 
+  #                   filter(yyyy == year) %>%
+  #                   select(TAZ, HH, EMP, tripGen = Trips) %>%
+  #                   left_join(df_int_growth, by = "TAZ")
+  # 
+  #   # Use new trip end totals for such zones
+  #   df_int_tripends <- trip_summary %>% 
+  #                      mutate(futureTrips = ifelse(is.na(growth), tripGen, 0)) %>%
+  #                      select(TAZ, futureTrips)
+  #   
+  # }
   
   #-----------------------------------------------------------------------------
   # run IPF
@@ -200,7 +210,7 @@ for(y in 1:length(Years)){
   print(paste("IPF seed table is   ", seedTT_file))
   print(paste("IPF output table is ", ipf_mat_file))
   print(paste("IPF log file is     ", log_file)) 
-  print(paste("Scenario Name       ", scenNames[scenarios]))
+  print(paste("Scenario Name       ", runScenario))
   print("-----------------------------------------")
   
   # Read seed table

@@ -80,30 +80,34 @@ years      <- unique(df_taz2$year)
 excel_data[["2015"]] <- df_taz %>%
                         filter(year == 2015)
 
+
 for(y in 1:length(years)){
   
-  fratar_file <- paste0("Output/",years[y],"_FratarInput.txt") 
-  
-  df_ext_y <- df_ext%>%
-              select(id = paste0("Year.",years[y]))
-  
-  df_taz_y <- df_taz2 %>%
-              filter(year == years[y]) %>%
-              select(id)
-  
-  df_fratar <- rbind(df_taz_y, df_ext_y)
+  # To write tranplan based FRATAR input files
+  if(writeTrnPLnFratarInput){
+    fratar_file <- paste0("Output/",years[y],"_FratarInput.txt") 
     
-  # Write FRATAR File
-  write.table(df_fratar, fratar_file, sep = " ", quote = FALSE,
-              row.names = F, col.names = F)
-  
+    df_ext_y <- df_ext%>%
+                select(id = paste0("Year.",years[y]))
+    
+    df_taz_y <- df_taz2 %>%
+                filter(year == years[y]) %>%
+                select(id)
+    
+    df_fratar <- rbind(df_taz_y, df_ext_y)
+      
+    # Write FRATAR File
+    write.table(df_fratar, fratar_file, sep = " ", quote = FALSE,
+                row.names = F, col.names = F)
+    }
   
   # Not required by for reference
   df_taz_trip <- df_taz %>%
                  filter(year == years[y]) 
   
   excel_data[[as.character(years[y])]] <- df_taz_trip
-   
+
+ 
 }
 
 

@@ -80,7 +80,7 @@ List runIPF(DataFrame df, NumericVector gfac, NumericVector tripEnds, int maxTri
       if(seed_colTotal[x] == 0)  col_target[x] = 0;
       gfac[x] = 1.0;
     } else{
-      Rcout << "Check growth factors and trip ends " << std::endl;
+      Rcout << "Check growth factors and trip ends for TAZ" << x+1 << std::endl;
     }
 
     // Cap them at max and lower the initial growth factors
