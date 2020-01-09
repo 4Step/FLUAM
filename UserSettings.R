@@ -20,7 +20,7 @@ Years      <- c(2015, 2020, 2025, 2030, 2035, 2040, 2045, 2050)
 runFLUAM   <- c(0,       1,    1,    1,    1,    1,    1,    1)
 runMPO     <- c(0,      -1,   -1,   -1,   -1,    0,    1,    1) 
 
-useMPO_Controls <- TRUE
+useMPO_Controls <- FALSE
 
 # To write Tranplan Fratar Inputs (FLUAM 2.1 compatabile)
 writeTrnPLnFratarInput <- FALSE
