@@ -5,7 +5,7 @@ library(openxlsx)
 
 out_dir     <- "Output"
 
-useMPO_Controls <- TRUE
+useMPO_Controls <- FALSE
 
 df_kfac <- read.csv(tripGen_facs)
 
